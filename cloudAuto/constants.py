@@ -3,17 +3,6 @@ import json
 
 URL_GETAWS = "https://labs.vocareum.com/util/vcput.php"
 
-COOKIES_FILENAME = "cookies.txt"
-try:
-    COOKIES = json.loads(Path(COOKIES_FILENAME).read_text())
-except json.decoder.JSONDecodeError as e:
-    if "double quotes" in e.msg:
-        string = Path(COOKIES_FILENAME).read_text()
-        COOKIES = json.loads(string.replace("'", '"'))
-    else:
-        raise e
-
-
 HEADERS = {
     "authority": "labs.vocareum.com",
     "accept": "*/*",

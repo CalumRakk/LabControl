@@ -1,8 +1,10 @@
 import logging
 import time
 import requests
-from .constants import *
 import re
+from datetime import datetime
+from .constants import *
+
 
 logging.basicConfig(
     filename="log.txt",
@@ -15,6 +17,10 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 r_getMinutes = re.compile(r"(?<=\()\d+(?= \w+\))")
+r_getCookies = re.compile(r"(?<=cookie:\s).*?(?=')")
+
+curl_txt_last_modified = None
+current_cookies = None
 
 
 def seconds_to_timeh(seconds):
@@ -50,7 +56,7 @@ def get_getaws() -> int:
     response = requests.get(
         URL_GETAWS,
         params=PARAMS_GETAWS,
-        cookies=COOKIES,
+        cookies=load_cookies(),
         headers=HEADERS,
     )
 
@@ -71,7 +77,7 @@ def get_startaws() -> int:
     response = requests.get(
         URL_GETAWS,
         params=PARAMS_STARTAWS,
-        cookies=COOKIES,
+        cookies=load_cookies(),
         headers=HEADERS,
     )
 
@@ -82,3 +88,32 @@ def get_startaws() -> int:
     except AttributeError as e:
         logger.info(f"response: {response.text}")
         raise e
+
+
+def load_cookies() -> dict:
+    global curl_txt_last_modified
+    global current_cookies
+
+    path = Path("cUrl.txt")
+    stat = path.stat().st_mtime
+    current_last_modified = datetime.fromtimestamp(stat)
+
+    if current_last_modified != curl_txt_last_modified:
+        cUrl = path.read_text()
+        current_cookies = parse_curl_to_json(cUrl)
+        curl_txt_last_modified = current_last_modified
+        logger.info("Las Cookies se han cargado.")
+    return current_cookies
+
+
+def parse_curl_to_json(cUrl) -> dict:
+    """De un comando cUrl extrae las cookies en formato json"""
+    match = r_getCookies.search(cUrl)
+    if match:
+        cookies_string = r_getCookies.search(cUrl).group()
+        keys_string = cookies_string.split(";")
+        cookies = {}
+        for key_string in keys_string:
+            key, value = key_string.split("=")
+            cookies.update({key: value})
+        return cookies
