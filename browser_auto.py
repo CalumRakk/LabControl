@@ -1,6 +1,7 @@
 import time
 from lxml import html
 from playwright.sync_api import sync_playwright
+from playwright._impl._errors import TimeoutError
 import random
 from cloudAuto.utils import sleep_program
 from pathlib import Path
@@ -53,7 +54,8 @@ def login_and_get_cookies(username, password, headless=True) -> list[dict]:
             if seg >= 15:
                 logger.info("Haciendo clic en el botón 'Cargar Laboratorio'.")
                 try:
-                    page.query_selector("[type='submit']").click()
+                    element = page.query_selector("[type='submit']")
+                    element.click()
                 except TimeoutError:
                     logger.error(
                         "Error TimeoutError al hacer clic en el botón 'Cargar Laboratorio'."
