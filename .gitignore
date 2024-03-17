@@ -2,3 +2,6 @@ cookies.txt
 log.txt
 __pycache__/
 docs/
+user
+user.txt
+*.json

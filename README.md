@@ -13,3 +13,5 @@ Seguir las siguientes instrucciones para hacer funcionar este script:
 
 5. pegue la solicitud en el archivo de texto `cUrl.txt`
 6. inicie el script `python script.py` -->
+
+    playwright install
