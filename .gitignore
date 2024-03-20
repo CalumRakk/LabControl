@@ -5,3 +5,5 @@ docs/
 user
 user.txt
 *.json
+cookies_browser.json
+*.txt
