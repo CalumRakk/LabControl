@@ -152,7 +152,7 @@ def get_user() -> tuple[str, str]:
     else:
         username = input("Username>>>")
         password = input("Password>>>")
-    return username, password
+    return username.strip(), password.strip()
 
 
 def login(func):
@@ -270,9 +270,8 @@ def load_cookies() -> dict:
                 content = PATH_COOKIES.read_text()
                 current_cookies = json.loads(content)
                 if file_cookies_last_modified:
-                    logger.info(
-                        f"Se encontraron modificaciones en el archivo de cookies: {PATH_COOKIES.name}."
-                    )
+                    msg = f"Se encontraron modificaciones en el archivo de cookies: {PATH_COOKIES.name}."
+                    logger.info(msg)
                 file_cookies_last_modified = current_file_cookies_last_modified
                 return current_cookies
 
@@ -280,14 +279,12 @@ def load_cookies() -> dict:
             current_cookies = json.loads(content)
             logger.info(f"Se han cargado las cookies del archivo {PATH_COOKIES.name}.")
             return current_cookies
-        except TypeError:
-            logger.warning(
-                f"No se pudo deserializar las cookies del archivo {PATH_COOKIES.name}."
-            )
+        except TypeError as e:
+            msg = f"No se pudo deserializar las cookies del archivo {PATH_COOKIES.name}"
+            logger.warning(msg)
     else:
-        logger.warning(
-            f"No se encontró el archivo {PATH_COOKIES.name} para cargar las cookies."
-        )
+        msg = f"No se encontró el archivo {PATH_COOKIES.name} para cargar las cookies."
+        logger.warning(msg)
     return {}
 
 
