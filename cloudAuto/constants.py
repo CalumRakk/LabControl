@@ -54,7 +54,6 @@ REQUIRED_COOKIE_KEYS = [
     "userid",
     "t2fausers",
     "usingLTI",
-    "vocuserid",
     "myfolder",
     "currentcourse",
     "currentassignment",
