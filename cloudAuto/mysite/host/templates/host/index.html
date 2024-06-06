@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Interruptor de encendido/apagado</title>
+</head>
+<body>
+    {% csrf_token %}
+    <h1>Interruptor de encendido/apagado</h1>
+    <button id="switch-button">{{ switch_state }}</button>
+
+    <script>
+        const InstanceAWS = document.getElementById('switch-button');
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        InstanceAWS.addEventListener('click', () => {
+            fetch('/host/', {
+                method: 'POST',
+                headers: { "X-CSRFToken": csrftoken }
+            })
+            .then(response => response.json())
+            .then(data => {
+                InstanceAWS.textContent = data.status;
+            });
+        });
+    </script>
+</body>
+</html>

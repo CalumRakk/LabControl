@@ -9,3 +9,4 @@ cookies_browser.json
 *.txt
 test.py
 test2.py
+*.ini
