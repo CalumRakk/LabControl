@@ -12,6 +12,6 @@ page_aws.goto(us_west_oregon_url)
 instance_id = config["instance_id"]["server_double"]
 status = browser.get_status_instance(page_aws, instance_id)
 if status.is_off:
-    browser.start_instance(page_aws, instance_id)
+    browser.set_action_instance(page_aws, instance_id, ActionsInstance.Stop)
 
 print()

@@ -80,6 +80,7 @@ class Browser:
         return new_page
 
     def _select_instance(self, page: Page, instance_id) -> FrameLocator:
+        """Selecciona la fila de la instancia si no está seleccionada"""
         frame = page.frame_locator("#compute-react-frame")
 
         locate_instance = frame.locator(
@@ -95,18 +96,23 @@ class Browser:
         if isinstance(action, ActionsInstance) is False:
             raise ValueError("action debe ser una instancia de ActionsInstance")
 
+        # Abre el menu de acciones de la instancia
         frame.locator(
             f"xpath=//div[@class='awsui_dropdown-trigger_sne0l_lqyym_193']/button"
         ).first.click()
 
+        # Hace clic en el botón de la accion especificada
         locate_action = frame.locator(f"xpath=//li[@data-testid='{action.item}']")
         locate_action.click()
 
-    def start_instance(self, page: Page, instance_id):
-        frame = self._select_instance(page, instance_id)
-        self._apply_action_instance(frame, ActionsInstance.Start)
+        # click en confirmación la accion si la action es Stop
+        if action == ActionsInstance.Stop:
+            frame.locator(
+                "xpath=//button[@data-id='confirmation-modal-primary-btn']"
+            ).click()
 
     def get_status_instance(self, page: Page, instance_id) -> StatusInstance:
+        # no es necesario actualizar la pagina
         frame = self._select_instance(page, instance_id)
 
         locate = frame.locator(
@@ -117,19 +123,11 @@ class Browser:
         status_text.capitalize()
         return getattr(StatusInstance, status_text.capitalize())
 
-    def stop_instance(self, page: Page, instance_id):
+    def set_action_instance(
+        self, page: Page, instance_id: str, action: ActionsInstance
+    ):
         frame = self._select_instance(page, instance_id)
-        self._apply_action_instance(frame, ActionsInstance.Stop)
-
-        locator = frame.locator(
-            "xpath=//span[span/span[@class='awsui_icon_1cbgc_eofsr_103']]"
-        ).first
-
-        text_status = locator.text_content()
-        current_status = translate_status_instance(
-            language=language, text_status=text_status
-        )
-        return current_status
+        self._apply_action_instance(frame, action)
 
 
 def add_cookies(context: BrowserContext):
