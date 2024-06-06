@@ -1,7 +1,14 @@
-from playwright.sync_api import sync_playwright, expect, Page, BrowserContext
+from playwright.sync_api import (
+    sync_playwright,
+    expect,
+    Page,
+    BrowserContext,
+    FrameLocator,
+)
 from pathlib import Path
 import json
 from cloudAuto import Config
+from cloudAuto.constants import ActionsInstance, StatusInstance
 from cloudAuto.utils import sleep_program
 import random
 
@@ -15,7 +22,7 @@ class Browser:
         self.context = self.browser.new_context(user_agent=user_agent)
         add_cookies(self.context)
 
-    def load_lab_page(self, force_load: bool = True) -> Page:
+    def _load_lab_page(self, force_load: bool = True) -> Page:
         config = Config()
 
         page = self.context.new_page()
@@ -26,6 +33,7 @@ class Browser:
             username = config["account"]["username"]
             password = config["account"]["password"]
             self.login(username, password)
+        return page
 
     def login(self, username, password, save=True):
         """Inicia sesión y carga el laboratorio"""
@@ -55,9 +63,73 @@ class Browser:
         new_page.wait_for_load_state()
         sleep_program(random.randint(1, 10))
         cookies = self.context.cookies()
+        new_page.close()
         if save:
             path = config["filepath"]["cookies_browser"]
             Path(path).write_text(json.dumps(cookies))
+
+    def load_aws(self, force_load: bool = True):
+        page_lab = self._load_lab_page(force_load=force_load)
+
+        with self.context.expect_page() as result_page:
+            page_lab.query_selector("#vmBtn").click()
+
+        new_page = result_page.value
+        new_page.wait_for_load_state()
+        page_lab.close()
+        return new_page
+
+    def _select_instance(self, page: Page, instance_id) -> FrameLocator:
+        frame = page.frame_locator("#compute-react-frame")
+
+        locate_instance = frame.locator(
+            f"xpath=//tr[.//a[contains(text(),'{instance_id}')]]/td[1]/span/label"
+        )
+
+        if locate_instance.is_checked() is False:
+            locate_instance.click()
+        return frame
+
+    def _apply_action_instance(self, frame: FrameLocator, action: ActionsInstance):
+        # Abre el menu de acciones de la instancia
+        if isinstance(action, ActionsInstance) is False:
+            raise ValueError("action debe ser una instancia de ActionsInstance")
+
+        frame.locator(
+            f"xpath=//div[@class='awsui_dropdown-trigger_sne0l_lqyym_193']/button"
+        ).first.click()
+
+        locate_action = frame.locator(f"xpath=//li[@data-testid='{action.item}']")
+        locate_action.click()
+
+    def start_instance(self, page: Page, instance_id):
+        frame = self._select_instance(page, instance_id)
+        self._apply_action_instance(frame, ActionsInstance.Start)
+
+    def get_status_instance(self, page: Page, instance_id) -> StatusInstance:
+        frame = self._select_instance(page, instance_id)
+
+        locate = frame.locator(
+            f"xpath=//tr[.//a[contains(text(),'{instance_id}')]]//button[starts-with(@data-analytics, 'instances-1-click-state-filter-')][1]"
+        )
+        value = locate.get_attribute("data-analytics")
+        status_text = value.split("-")[-1]
+        status_text.capitalize()
+        return getattr(StatusInstance, status_text.capitalize())
+
+    def stop_instance(self, page: Page, instance_id):
+        frame = self._select_instance(page, instance_id)
+        self._apply_action_instance(frame, ActionsInstance.Stop)
+
+        locator = frame.locator(
+            "xpath=//span[span/span[@class='awsui_icon_1cbgc_eofsr_103']]"
+        ).first
+
+        text_status = locator.text_content()
+        current_status = translate_status_instance(
+            language=language, text_status=text_status
+        )
+        return current_status
 
 
 def add_cookies(context: BrowserContext):

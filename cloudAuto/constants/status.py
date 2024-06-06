@@ -9,11 +9,11 @@ class StatusInstance(Enum):
 
     @property
     def is_on(self) -> bool:
-        return self in (StatusInstance.Running)
+        return self in [StatusInstance.Running]
 
     @property
     def is_off(self) -> bool:
-        return not self in (StatusInstance.Running)
+        return not self in [StatusInstance.Running]
 
     @property
     def translate(self) -> str:
