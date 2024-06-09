@@ -1,37 +1,40 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 import json
-
-status = "ON"
-
-
-def get_switch_state():
-    return status
+from autoCloud.paquetes.aws import Browser
+from autoCloud import Config
+from autoCloud.constants import ActionsInstance, StatusInstance
+import time
 
 
-def update_switch_state(state):
-    global status
-    status = state
-    data = {
-        "status": status,
-    }
+def get_browser_status() -> StatusInstance:
+    browser = Browser()
+    return browser.status
 
+
+def browser_status(request):
+    browser_status = get_browser_status()
+    data = {"browser_status": browser_status.translate}
     json_data = json.dumps(data)
-    return json_data
+    response = HttpResponse(json_data, content_type="application/json")
+    response["Access-Control-Allow-Origin"] = "*"
+    return response
 
 
-def auto(request):
+def aws(request):
     if request.method == "POST":
-        current_state = get_switch_state()
-        if current_state == "ON":
-            new_state = "OFF"
-        else:
-            new_state = "ON"
-        json_data = update_switch_state(new_state)
-
-        response = HttpResponse(json_data, content_type="application/json")
-        response["Access-Control-Allow-Origin"] = "*"
-        return response
+        browser_status = get_browser_status()
+        if browser_status.is_off:
+            browser = Browser()
+            browser.status = StatusInstance.Pending
+            browser.load_aws(cache=True)
+            browser.status = StatusInstance.Running
+        return HttpResponse(status=204)
 
     # Envía una respuesta al cliente
-    return render(request, "host/index.html", {"switch_state": get_switch_state()})
+    status = get_browser_status()
+    return render(
+        request,
+        "host/index.html",
+        {"browser_status": status, "Status": StatusInstance.__members__},
+    )

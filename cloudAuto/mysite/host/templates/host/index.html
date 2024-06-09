@@ -1,27 +1,53 @@
 <!DOCTYPE html>
 <html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Interruptor de encendido/apagado</title>
-</head>
-<body>
+  {% load static %}
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Control de Navegador y PC</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+      }
+      #statusPanel {
+        margin: 20px 0;
+      }
+      button {
+        padding: 10px 20px;
+        margin: 10px;
+      }
+    </style>
+  </head>
+  <body>
     {% csrf_token %}
-    <h1>Interruptor de encendido/apagado</h1>
-    <button id="switch-button">{{ switch_state }}</button>
+    <h1>Control de Navegador y PC</h1>
 
-    <script>
-        const InstanceAWS = document.getElementById('switch-button');
-        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        InstanceAWS.addEventListener('click', () => {
-            fetch('/host/', {
-                method: 'POST',
-                headers: { "X-CSRFToken": csrftoken }
-            })
-            .then(response => response.json())
-            .then(data => {
-                InstanceAWS.textContent = data.status;
-            });
-        });
-    </script>
-</body>
+    {% if browser_status == Status.Stopped %}
+    <div id="menu">
+      <button id="loadBrowserButton">Cargar Navegador</button>
+    </div>
+    {% else %}
+    <div id="menu">
+      <button id="loadBrowserButton" disabled>Cargar Navegador</button>
+    </div>
+    {% endif %}
+
+    <div id="statusPanel">
+      Estado del Navegador:
+      <span id="browserStatus">{{ browser_status.translate }}</span>
+    </div>
+
+    <div id="pcControl" style="display: none">
+      <button id="turnOnPCButton">Encender PC</button>
+      <button id="turnOffPCButton">Apagar PC</button>
+    </div>
+
+    <script src="{% static 'host/script.js' %}"></script>
+  </body>
 </html>
