@@ -75,6 +75,7 @@ class Browser(metaclass=SingletonMeta):
             return getattr(self, "_page_aws")
         else:
             config = Config()
+            self.status = StatusInstance.Pending
             page_lab = self._load_lab_page(force_load=force_load)
 
             with self.context.expect_page() as result_page:
@@ -88,6 +89,7 @@ class Browser(metaclass=SingletonMeta):
             us_west_oregon_url = config["aws"]["us_west_oregon_url"]
             new_page.goto(us_west_oregon_url)
 
+            self.status = StatusInstance.Running
             setattr(self, "_page_aws", new_page)
             return new_page
 

@@ -6,6 +6,7 @@ class StatusInstance(Enum):
     Pending = "Pending"
     Running = "Running"
     Stopping = "Stopping"
+    Unknown = "Unknown"
 
     @property
     def is_on(self) -> bool:
@@ -25,4 +26,5 @@ STATUS_SPANISH = {
     StatusInstance.Pending: "Pendiente",
     StatusInstance.Running: "En ejecución",
     StatusInstance.Stopping: "Deteniéndose",
+    StatusInstance.Unknown: "Desconocido",
 }

@@ -28,15 +28,9 @@
     {% csrf_token %}
     <h1>Control de Navegador y PC</h1>
 
-    {% if browser_status == Status.Stopped %}
     <div id="menu">
       <button id="loadBrowserButton">Cargar Navegador</button>
     </div>
-    {% else %}
-    <div id="menu">
-      <button id="loadBrowserButton" disabled>Cargar Navegador</button>
-    </div>
-    {% endif %}
 
     <div id="statusPanel">
       Estado del Navegador:
@@ -46,6 +40,10 @@
     <div id="pcControl" style="display: none">
       <button id="turnOnPCButton">Encender PC</button>
       <button id="turnOffPCButton">Apagar PC</button>
+      <div id="pcStatusPanel">
+        Estado del PC:
+        <span id="pcStatus">{{ pc_status.translate }}</span>
+      </div>
     </div>
 
     <script src="{% static 'host/script.js' %}"></script>
