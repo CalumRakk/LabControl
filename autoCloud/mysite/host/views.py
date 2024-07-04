@@ -1,9 +1,9 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 import json
-from autoCloud.paquetes.aws import Browser
-from autoCloud import Config
-from autoCloud.constants import ActionsInstance, StatusInstance
+from paquetes.paquetes.aws import Browser
+from paquetes import Config
+from paquetes.constants import ActionsInstance, StatusInstance
 import time
 from . import utils
 import logging

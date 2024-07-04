@@ -7,11 +7,11 @@ from playwright.sync_api import (
 )
 from pathlib import Path
 import json
-from autoCloud import Config
-from autoCloud.constants import ActionsInstance, StatusInstance
-from autoCloud.utils import sleep_program
+from paquetes import Config
+from paquetes.constants import ActionsInstance, StatusInstance
+from paquetes.utils import sleep_program
 import random
-from autoCloud.singleton import SingletonMeta
+from paquetes.singleton import SingletonMeta
 
 user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36"
 

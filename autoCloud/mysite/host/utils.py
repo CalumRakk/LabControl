@@ -1,8 +1,8 @@
 import json
 import logging
-from autoCloud.paquetes.aws import Browser
-from autoCloud import Config
-from autoCloud.constants import ActionsInstance, StatusInstance
+from paquetes.paquetes.aws import Browser
+from paquetes import Config
+from paquetes.constants import ActionsInstance, StatusInstance
 from django.http import HttpResponse, HttpResponseBadRequest
 
 logging.basicConfig(

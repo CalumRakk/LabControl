@@ -1,6 +1,8 @@
-from cloudAuto.paquetes.aws import Browser
-from cloudAuto import Config
-from cloudAuto.constants import ActionsInstance
+from autoCloud.paquetes.aws import Browser
+
+
+from autoCloud import Config
+from autoCloud.constants import ActionsInstance
 
 config = Config()
 browser = Browser()
