@@ -3,15 +3,15 @@ from platform import system
 from os import getenv
 
 # "North Virginia"
-URL_AWS_EAST_1 = (
+AWS_EAST_1_URL = (
     "https://us-east-1.console.aws.amazon.com/console/home?region=us-east-1#"
 )
 # "Oregon"
-URL_AWS_WEST_2 = (
+_AWS_WEST_2_URL = (
     "https://us-west-2.console.aws.amazon.com/console/home?region=us-west-2#"
 )
 
-URL_AWS_WEST_2_INSTANCES = (
+AWS_WEST_2_INSTANCES_URL = (
     "https://us-west-2.console.aws.amazon.com/ec2/home?region=us-west-2#Instances:"
 )
 

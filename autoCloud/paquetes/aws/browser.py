@@ -44,7 +44,7 @@ class Browser(metaclass=SingletonMeta):
 
     def _load_awsacademy(self) -> FrameLocator:
         """
-        Inicia session (si se especifica) y carga la pagina de AWS Academy Learner Lab
+        Inicia session (si es necesario) y carga la pagina de AWS Academy Learner Lab
         """
         config = Config()
         awsacademy_lab_url = config["URLs"]["awsacademy_lab_url"]
@@ -113,19 +113,6 @@ class Browser(metaclass=SingletonMeta):
         title_split = title.split(" ")[-1]
         return StatusLab.string_to_status(title_split)
 
-    # def _load_lab_page(self, force_load: bool = True) -> Page:
-    #     config = Config()
-
-    #     page = self.context.new_page()
-    #     page_url = config["vocareum"]["url"]
-    #     page.goto(page_url)
-
-    #     if force_load and is_login(page):
-    #         username = config["account"]["username"]
-    #         password = config["account"]["password"]
-    #         self.login(username, password)
-    #     return page
-
     def login(self, username, password, save=True):
         """Inicia sesión y carga el laboratorio"""
         config = Config()
@@ -158,44 +145,31 @@ class Browser(metaclass=SingletonMeta):
             path = config["filepath"]["cookies_browser"]
             Path(path).write_text(json.dumps(cookies))
 
-    def load_aws(self, force_load: bool = True, cache=False):
-        if cache and hasattr(self, "_page_aws"):
-            return getattr(self, "_page_aws")
-        else:
-            self.status = StatusInstance.Pending
+    def load_aws(self):
 
-            page_lab = self._load_awsacademy()
-            status = self.__get_status_lab(page_lab)
-            if status.is_off:
-                self.__start_lab(page_lab)
+        page_lab = self.current_page
+        if AWS_EAST_1_URL in page_lab.url:
+            # TODO: implementar una comprobación si la pagina AWS aun mantiene las credenciales.
+            return page_lab
 
-            frame = self.__get_lab_frame(page_lab)
+        self.status = StatusInstance.Pending
 
-            with self.context.expect_page() as result_page:
-                locator = frame.locator("xpath=//span[@onclick='launchAws()']")
-                locator.wait_for()
-                locator.click()
+        page_lab = self._load_awsacademy()
+        status = self.__get_status_lab(page_lab)
+        if status.is_off:
+            self.__start_lab(page_lab)
 
-            new_page = result_page.value
-            new_page.wait_for_load_state()
-            return new_page
+        frame = self.__get_lab_frame(page_lab)
 
-            print("status", status)
+        # click sobre el boton AWS para obtener la pagina de AWS con credensiales.
+        with self.context.expect_page() as result_page:
+            locator = frame.locator("xpath=//span[@onclick='launchAws()']")
+            locator.wait_for()
+            locator.click()
 
-            # with self.context.expect_page() as result_page:
-            #     page_lab.query_selector("#vmBtn").click()
-
-            # new_page = result_page.value
-            # new_page.wait_for_load_state()
-            # page_lab.close()
-
-            # # carga finalmente el panel de instancias a una localidad especifica
-            # us_west_oregon_url = config["aws"]["us_west_oregon_url"]
-            # new_page.goto(us_west_oregon_url)
-
-            # self.status = StatusInstance.Running
-            # setattr(self, "_page_aws", new_page)
-            # return new_page
+        new_page = result_page.value
+        new_page.wait_for_load_state()
+        return new_page
 
     def _select_instance(self, page: Page, instance_id) -> FrameLocator:
         """Selecciona la fila de la instancia si no está seleccionada"""
