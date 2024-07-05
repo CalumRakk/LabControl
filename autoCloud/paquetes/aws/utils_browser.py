@@ -1,6 +1,5 @@
-from .constants import *
-
-from cloudAuto.paquetes.utils import StatusInstance, ActionsInstance
+from ..auto.constants import *
+from ...constants import *
 from playwright.sync_api import sync_playwright, expect, Page
 
 

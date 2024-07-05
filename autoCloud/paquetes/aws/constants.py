@@ -1,3 +1,7 @@
+from pathlib import Path
+from platform import system
+from os import getenv
+
 # "North Virginia"
 URL_AWS_EAST_1 = (
     "https://us-east-1.console.aws.amazon.com/console/home?region=us-east-1#"
@@ -26,3 +30,16 @@ REQUIRED_COOKIE_FOR_DescribeInstances = [
     "x-amz-security-token",
     "x-amz-user-agent",
 ]
+
+VOCAREUM_URL = "https://labs.vocareum.com/"
+VOCAREUM_LOGIN_URL = "https://labs.vocareum.com/home/login.php"
+AWSACADEMY_URL = "https://awsacademy.instructure.com"
+AWSACADEMY_LOGIN_URL = "https://awsacademy.instructure.com/login/canvas"
+
+PROJECT_NAME = "autoCloud"
+HOME = Path.home() / ".local/share" if system() == "Linux" else Path(getenv("APPDATA"))
+PATH_COOKIES_BROWSER = HOME / PROJECT_NAME / "cookies_browser.json"
+PATH_COOKIES = Path("cookies.json")
+
+
+PATH_COOKIES_BROWSER.parent.mkdir(exist_ok=True, parents=True)
