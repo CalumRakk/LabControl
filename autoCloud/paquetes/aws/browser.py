@@ -86,8 +86,9 @@ class Browser(metaclass=SingletonMeta):
         return page
 
     def __start_lab(self, page: Page) -> StatusLab:
-        # La pagina del laboratorio cargado tiene los dos botones para iniciar o detener el laboratorio.
-        # Cuando un laboratorio es detenido, las instancias de AWS Academy Learner Lab se detienen.
+        """click al boton "Start Lab" de la pagina del laboratorio."""
+        # La pagina del laboratorio cargado tiene dos botones: para iniciar o detener el laboratorio.
+        # Cuando un laboratorio es detenido, las instancias de AWS se detienen.
 
         frame = self.__get_lab_frame(page)
         locator = frame.locator("xpath=//div[@id='launchclabsbtn']")
@@ -110,7 +111,7 @@ class Browser(metaclass=SingletonMeta):
         locator.wait_for()
         title = locator.get_attribute("title")
         title_split = title.split(" ")[-1]
-        return getattr(StatusLab, title_split)
+        return StatusLab.string_to_status(title_split)
 
     # def _load_lab_page(self, force_load: bool = True) -> Page:
     #     config = Config()

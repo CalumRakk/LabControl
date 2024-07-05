@@ -40,6 +40,18 @@ class StatusLab(Enum):
     def translate(self) -> str:
         return STATUS_LAB_SPANISH[self]
 
+    @classmethod
+    def string_to_status(cls, status: str) -> "StatusLab":
+        if hasattr(cls, status):
+            return getattr(cls, status)
+
+        if status == "Creation":
+            return StatusLab.In_Creation
+        elif status == "down":
+            return StatusLab.Terminated
+
+        raise Exception(f"status {status} not found")
+
 
 STATUS_SPANISH = {
     StatusInstance.Stopped: "Detenida",
