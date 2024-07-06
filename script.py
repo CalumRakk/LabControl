@@ -1,13 +1,10 @@
 from autoCloud.paquetes.aws import Browser
 
-
 from autoCloud import Config
 from autoCloud.constants import ActionsInstance
 
 config = Config()
 browser = Browser()
-page_aws = browser.load_aws()
-
 page_aws = browser.load_aws()
 
 

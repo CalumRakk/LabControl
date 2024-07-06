@@ -1,12 +1,16 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 import json
-from paquetes.paquetes.aws import Browser
-from paquetes import Config
-from paquetes.constants import ActionsInstance, StatusInstance
-import time
-from . import utils
+import sys
+import os
 import logging
+
+from . import utils
+
+sys.path.append(os.getcwd())
+from autoCloud import Config
+from autoCloud.constants import ActionsInstance, StatusInstance
+from autoCloud.paquetes.aws import Browser
 
 
 logger = logging.getLogger(__name__)
@@ -61,7 +65,7 @@ def aws(request) -> HttpResponse:
                 logger.info("action turnOnBrowser")
                 if browser_status.is_off:
                     browser = Browser()
-                    lab = browser.load_aws(cache=True)
+                    lab = browser.load_aws()
 
                 return utils.get_status(http_response=True)
 

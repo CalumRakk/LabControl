@@ -1,9 +1,14 @@
 import json
 import logging
-from paquetes.paquetes.aws import Browser
-from paquetes import Config
-from paquetes.constants import ActionsInstance, StatusInstance
 from django.http import HttpResponse, HttpResponseBadRequest
+import os
+import sys
+
+sys.path.append(os.getcwd())
+from autoCloud import Config
+from autoCloud.constants import ActionsInstance, StatusInstance
+from autoCloud.paquetes.aws import Browser
+
 
 logging.basicConfig(
     filename="log.txt",
