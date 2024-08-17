@@ -1,3 +1,21 @@
+import logging
+import time
+
+logger = logging.getLogger(__name__)
+
+
+def seconds_to_timeh(seconds):
+    horas = seconds // 3600
+    minutos = (seconds % 3600) // 60
+    segundos = (seconds % 3600) % 60
+
+    horasString = str(horas).zfill(2)
+    minutosString = str(minutos).zfill(2)
+    segundosString = str(segundos).zfill(2)
+
+    return f"{horasString}:{minutosString}:{segundosString}"
+
+
 def sleep_program(sleep_seconds: int):
     if sleep_seconds > 0:
         logger.info(

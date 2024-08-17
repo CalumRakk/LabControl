@@ -1,3 +1,9 @@
+import random
+import json
+from pathlib import Path
+import time
+from urllib.parse import urljoin
+
 from playwright.sync_api import (
     sync_playwright,
     expect,
@@ -5,45 +11,74 @@ from playwright.sync_api import (
     BrowserContext,
     FrameLocator,
 )
-from pathlib import Path
-import json
-from autoCloud import Config
-from autoCloud.constants import ActionsInstance, StatusInstance
-from autoCloud.utils import sleep_program
-import random
-from autoCloud.singleton import SingletonMeta
+
+
+from ... import Config
+from ...constants import ActionsInstance, StatusInstance, StatusLab
+from ...utils import sleep_program
+from ...singleton import SingletonMeta
+from .constants import *
+from .methods import Methods
 
 user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36"
 
 
-class Browser(metaclass=SingletonMeta):
-    def __init__(self):
-        self.playwright = sync_playwright().start()
-        self.browser = self.playwright.chromium.launch(headless=False)
-        self.context = self.browser.new_context(user_agent=user_agent)
-        add_cookies(self.context)
-        self.status = StatusInstance.Stopped
+class Browser(Methods, metaclass=SingletonMeta):
+    def __init__(self, headless=False):
+        self.headless = headless
+        self.status = BrowserStatus.Stopped
+        self.pc_status = PCStatus.Unknown
 
-    def _load_lab_page(self, force_load: bool = True) -> Page:
-        config = Config()
+    @property
+    def playwright(self):
+        if not hasattr(self, "_playwright"):
+            self._playwright = sync_playwright().start()
+        return self._playwright
 
-        page = self.context.new_page()
-        lab_url = config["vocareum"]["labs_url"]
-        page.goto(lab_url)
+    @property
+    def browser(self):
+        if not hasattr(self, "_browser"):
+            self._browser = self.playwright.chromium.launch(headless=False)
+            add_cookies(self.context)
+        return self._browser
 
-        if force_load and is_login(page):
-            username = config["account"]["username"]
-            password = config["account"]["password"]
-            self.login(username, password)
-        return page
+    @property
+    def context(self) -> BrowserContext:
+        if not hasattr(self, "_context"):
+            self._context = self.browser.new_context(user_agent=user_agent)
+        return self._context
+
+    @property
+    def current_page(self) -> Page:
+        if self.context.pages == []:
+            # config = Config()
+            # awsacademy_lab_url = config["URLs"]["awsacademy_lab_url"]
+
+            page = self.context.new_page()
+            self.status = StatusInstance.Running
+            return page
+            # if awsacademy_lab_url == "":
+            #     page.goto(AWSACADEMY_URL)
+            # else:
+            #     page.goto(awsacademy_lab_url)
+        return self.context.pages[-1]
+
+    @property
+    def last_url(self) -> str:
+        """La URL especificada por el usuario."""
+        return getattr(self, "_last_url")
+
+    @last_url.setter
+    def last_url(self, value: str):
+        self._last_url = value
 
     def login(self, username, password, save=True):
         """Inicia sesión y carga el laboratorio"""
         config = Config()
-        canvas_login_url = config["awsacademy"]["canvas_login_url"]
+        page = self.current_page
 
-        page = self.context.new_page()
-        page.goto(canvas_login_url)
+        if page.url != AWSACADEMY_LOGIN_URL:
+            page.goto(AWSACADEMY_LOGIN_URL)
 
         # Iniciar sesión
         delay = lambda: random.uniform(200, 500)
@@ -54,76 +89,40 @@ class Browser(metaclass=SingletonMeta):
 
         sleep_program(random.randint(1, 10))
 
-        # Carga el laboratorio
-        module_url = config["awsacademy"]["module_url"]
-        page.goto(module_url)
-        sleep_program(random.randint(1, 10))
-        with self.context.expect_page() as result_page:
-            page.query_selector("[type='submit']").click()
+        # # Carga el laboratorio
+        # module_url = config["awsacademy"]["module_url"]
+        # page.goto(module_url)
+        # sleep_program(random.randint(1, 10))
+        # with self.context.expect_page() as result_page:
+        #     page.query_selector("[type='submit']").click()
 
-        new_page = result_page.value
-        new_page.wait_for_load_state()
-        sleep_program(random.randint(1, 10))
+        # new_page = result_page.value
+        # new_page.wait_for_load_state()
+        # sleep_program(random.randint(1, 10))
         cookies = self.context.cookies()
-        new_page.close()
         if save:
             path = config["filepath"]["cookies_browser"]
             Path(path).write_text(json.dumps(cookies))
 
-    def load_aws(self, force_load: bool = True, cache=False):
-        if cache and hasattr(self, "_page_aws"):
-            return getattr(self, "_page_aws")
-        else:
-            config = Config()
-            self.status = StatusInstance.Pending
-            page_lab = self._load_lab_page(force_load=force_load)
+    def load_aws(self):
+        # self.go_url(AWSACADEMY_URL)
 
-            with self.context.expect_page() as result_page:
-                page_lab.query_selector("#vmBtn").click()
+        page_lab = self._load_awsacademy()
+        status = self.__get_status_lab(page_lab)
+        if status.is_off:
+            self.__start_lab(page_lab)
 
-            new_page = result_page.value
-            new_page.wait_for_load_state()
-            page_lab.close()
+        frame = self.__get_lab_frame(page_lab)
 
-            # carga finalmente el panel de instancias a una localidad especifica
-            us_west_oregon_url = config["aws"]["us_west_oregon_url"]
-            new_page.goto(us_west_oregon_url)
+        # click sobre el boton AWS para obtener la pagina de AWS con credenciales.
+        with self.context.expect_page() as result_page:
+            locator = frame.locator("xpath=//span[@onclick='launchAws()']")
+            locator.wait_for()
+            locator.click()
 
-            self.status = StatusInstance.Running
-            setattr(self, "_page_aws", new_page)
-            return new_page
-
-    def _select_instance(self, page: Page, instance_id) -> FrameLocator:
-        """Selecciona la fila de la instancia si no está seleccionada"""
-        frame = page.frame_locator("#compute-react-frame")
-
-        locate_instance = frame.locator(
-            f"xpath=//tr[.//a[contains(text(),'{instance_id}')]]/td[1]/span/label"
-        )
-
-        if locate_instance.is_checked() is False:
-            locate_instance.click()
-        return frame
-
-    def _apply_action_instance(self, frame: FrameLocator, action: ActionsInstance):
-        # Abre el menu de acciones de la instancia
-        if isinstance(action, ActionsInstance) is False:
-            raise ValueError("action debe ser una instancia de ActionsInstance")
-
-        # Abre el menu de acciones de la instancia
-        frame.locator(
-            f"xpath=//div[@class='awsui_dropdown-trigger_sne0l_lqyym_193']/button"
-        ).first.click()
-
-        # Hace clic en el botón de la accion especificada
-        locate_action = frame.locator(f"xpath=//li[@data-testid='{action.item}']")
-        locate_action.click()
-
-        # click en confirmación la accion si la action es Stop
-        if action == ActionsInstance.Stop:
-            frame.locator(
-                "xpath=//button[@data-id='confirmation-modal-primary-btn']"
-            ).click()
+        new_page = result_page.value
+        new_page.wait_for_load_state()
+        return new_page
 
     def get_status_instance(self, page: Page, instance_id) -> StatusInstance:
         # no es necesario actualizar la pagina
@@ -143,22 +142,23 @@ class Browser(metaclass=SingletonMeta):
         frame = self._select_instance(page, instance_id)
         self._apply_action_instance(frame, action)
 
+    def go_url(self, url) -> Page:
+        """Metodo para ir a una URL"""
+
+        page = self.current_page
+        if url in page.url:
+            return page
+
+        page.goto(url)
+        self.last_url = url
+        time.sleep(5)
+
 
 def add_cookies(context: BrowserContext):
-    """Agrega unas cookies especificas al contexto (navegador)"""
+    """Agrega las cookies locales al contexto (navegador)"""
     config = Config()
     path_cookies_browser = config["filepath"]["cookies_browser"]
-    cookies_list = json.loads(Path(path_cookies_browser).read_text())
-    context.add_cookies(cookies=cookies_list)
-
-
-def is_login(page: Page) -> bool:
-    """Devuelve True si se está dentro de la pagina de inicio de sesión de Vocareum"""
-    # TODO: verificar sin tener que refrescar
-
-    config = Config()
-    login_page_url = config["vocareum"]["login_url"]
-    page.reload()
-    if page.url == login_page_url:
-        return True
-    return False
+    path = Path(path_cookies_browser)
+    if path.exists():
+        cookies_list = json.loads(path.read_text())
+        context.add_cookies(cookies=cookies_list)
