@@ -22,8 +22,15 @@ def start_browser():
     browser = Browser()
     if browser.status == BrowserStatus.Stopped:
         cache.set("browser_status", BrowserStatus.Running.value)
-
+    stop_browser.apply_async(countdown=10)
     browser.context
+    return True
+
+
+@shared_task
+def stop_browser():
+    browser = Browser()
+    Browser.stop(browser)
     return True
 
 
@@ -31,4 +38,5 @@ def start_browser():
 def go_to_url(url):
     browser = Browser()
     browser.go_url(url)
+    stop_browser.apply_async(countdown=10)
     return True

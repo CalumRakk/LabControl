@@ -4,8 +4,12 @@ from cloudAuto.constants import ActionsInstance
 
 config = Config()
 browser = Browser()
-page_aws = browser.load_aws()
-page_aws = browser.load_aws()
+
+browser.current_page
+
+Browser.stop(browser)
+
+browser = Browser()
 
 us_west_oregon_url = config["aws"]["us_west_oregon_url"]
 page_aws.goto(us_west_oregon_url)

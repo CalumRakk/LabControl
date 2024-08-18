@@ -29,6 +29,14 @@ class Browser(Methods, metaclass=SingletonMeta):
         self.status = BrowserStatus.Stopped
         self.pc_status = PCStatus.Unknown
 
+    @classmethod
+    def stop(cls, instance):
+        """Detiene el navegador y lo elimina de las instancia del singleton para que se pueda volver a intanciar como un nuevo objeto."""
+        if cls in cls._instances:
+            r = cls._instances.pop(cls)
+            del r
+            instance.playwright.stop()
+
     @property
     def playwright(self):
         if not hasattr(self, "_playwright"):
