@@ -45,6 +45,7 @@ class Browser(Methods, metaclass=SingletonMeta):
     @property
     def context(self) -> BrowserContext:
         if not hasattr(self, "_context"):
+            self.status = StatusInstance.Running
             self._context = self.browser.new_context(user_agent=user_agent)
         return self._context
 
@@ -55,7 +56,6 @@ class Browser(Methods, metaclass=SingletonMeta):
             # awsacademy_lab_url = config["URLs"]["awsacademy_lab_url"]
 
             page = self.context.new_page()
-            self.status = StatusInstance.Running
             return page
             # if awsacademy_lab_url == "":
             #     page.goto(AWSACADEMY_URL)
@@ -146,12 +146,15 @@ class Browser(Methods, metaclass=SingletonMeta):
         """Metodo para ir a una URL"""
 
         page = self.current_page
+        if not (isinstance(url, str) and url.startswith("http")):
+            return False
+
         if url in page.url:
             return page
 
         page.goto(url)
         self.last_url = url
-        time.sleep(5)
+        return True
 
 
 def add_cookies(context: BrowserContext):

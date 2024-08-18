@@ -1,6 +1,7 @@
 from enum import Enum
 
 
+# Acciones relacionadas con al panel lab de AWS Academy
 class ActionsInstance(Enum):
     Stop = "Stop"
     Start = "Start"
@@ -29,3 +30,12 @@ ACTIONS_SPANISH = {
     ActionsInstance.Reboot: "Reiniciar",
     ActionsInstance.Hibernate: "Hibernar",
 }
+
+
+class Action(Enum):
+    startBrowser = "startBrowser"
+    startPC = "startPC"
+    stopBrowser = "stopBrowser"
+    stopPC = "stopPC"
+    go_to_url = "go_to_url"
+    checkTask = "checkTask"

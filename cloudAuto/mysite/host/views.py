@@ -1,19 +1,77 @@
-from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse
-import json
-import logging
-from autoCloud.paquetes.aws.constants import BrowserStatus, PCStatus
-from autoCloud.constants import ActionsInstance
+from django.core.cache import cache
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from host.task import go_to_url, start_browser
 from celery.result import AsyncResult
-import redis
-from . import utils
-from autoCloud.paquetes.aws import Browser
+from django.shortcuts import render
+from django.views.decorators.cache import cache_page
+import json
+from cloudAuto.constants import Action
 
-from host.task import load_browser, browser_go_to_url
 
-conn = redis.Redis(host="localhost", port=6379, db=0)
+@api_view(["GET"])
+def hello_world(request):
+    # task = get_status.delay()
+    # result = AsyncResult(task.id)
 
-logger = logging.getLogger(__name__)
+    # if result.ready():
+    #     browser_status = cache.get("browser_status")
+    #     return Response({"browser_status": "browser_status"})
+
+    return Response({"message": "pending"})
+
+
+class BrowserControlView(APIView):
+    def post(self, request):
+        # {"action": "startBrowser"}
+        # {"action": "go_to_url","url": "https://www.google.com"}
+        # {"action": "checkTask","task_id": "d9e268c1-65bb-47d8-8326-2395c33541d9"}
+        action_data = request.data.get("action")
+
+        if not hasattr(Action, action_data):
+            return Response({"message": "error"}, status=400)
+
+        action = getattr(Action, action_data)
+        if action == Action.startBrowser:
+            task = start_browser.delay()
+            return Response(
+                {"action": action.value, "status": task.status, "task_id": task.id}
+            )
+
+        elif action == Action.go_to_url:
+            url = request.data.get("url", "")
+            if not (isinstance(url, str) and url.startswith("http")):
+                return Response({"message": "error"}, status=400)
+
+            task = go_to_url.delay(url)
+            return Response(
+                {"action": action.value, "status": task.status, "task_id": task.id}
+            )
+        elif action == Action.checkTask:
+            task_id = request.data.get("task_id", "asdsa")
+            result = None
+            task = AsyncResult(task_id)
+            if task.ready():
+                result = task.get()
+
+            return Response(
+                {
+                    "action": action.value,
+                    "status": task.status,
+                    "result": result,
+                    "info": task.info,
+                }
+            )
+
+        return Response({"message": "error"}, status=400)
+
+        # elif action == "go_to_url":
+        #     url = data.get("url")
+        #     browser_go_to_url.delay(url)
+
+        # conn.set("status", json.dumps(status))
+        # return JsonResponse(status, status=200)
 
 
 # def get_browser_status(request) -> HttpResponse:
@@ -38,41 +96,9 @@ logger = logging.getLogger(__name__)
 #     # response = HttpResponse(json_data, content_type="application/json")
 #     # response["Access-Control-Allow-Origin"] = "*"
 #     return JsonResponse(data)
-from django.core.cache import cache
-from rest_framework.views import APIView
-from rest_framework.response import Response
-
-class RedisDataView(APIView):
-    def get(self, request):
-        data = cache.get("status")
-        if data:
-            return Response(data)
-        return Response({"error": "Data not found"}, status=404)
 
 
-def browser_control(request):
-    try:
-        status = json.loads(conn.get("status").decode("utf-8"))
-        browser_status = getattr(BrowserStatus, status["browser_status"])
-
-        data = json.loads(request.body)
-        action = data.get("action")
-        if action == ActionsInstance.Start.value:
-            logger.info("action stop")
-            load_browser.delay()
-            status["browser_status"] = BrowserStatus.Running.value
-        elif action == "go_to_url":
-            url = data.get("url")
-            browser_go_to_url.delay(url)
-
-        conn.set("status", json.dumps(status))
-        return JsonResponse(status, status=200)
-
-    except json.JSONDecodeError:
-        return JsonResponse({"error": "Formato JSON inválido"}, status=400)
-
-
-def aws(request) -> HttpResponse:
+def aws(request):
     # try:
     #     if request.method == "POST":
     #         try:
@@ -86,8 +112,6 @@ def aws(request) -> HttpResponse:
     #             return "loading browser"
     # except:
     #     pass
-
-    logger.info("solicitud http get aws")
 
     return render(
         request,

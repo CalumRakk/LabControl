@@ -2,8 +2,8 @@
 from celery import shared_task
 import json
 
-from autoCloud.paquetes.aws import Browser
-from autoCloud.paquetes.aws.constants import BrowserStatus, PCStatus
+from cloudAuto.paquetes.aws import Browser
+from cloudAuto.paquetes.aws.constants import BrowserStatus, PCStatus
 import redis
 from django.core.cache import cache
 
@@ -18,11 +18,17 @@ from django.core.cache import cache
 
 
 @shared_task
-def load_browser():
+def start_browser():
     browser = Browser()
-    browser.go_url("https://www.google.com")
-    
+    if browser.status == BrowserStatus.Stopped:
+        cache.set("browser_status", BrowserStatus.Running.value)
+
+    browser.context
+    return True
+
+
 @shared_task
-def browser_go_to_url(url):
+def go_to_url(url):
     browser = Browser()
     browser.go_url(url)
+    return True

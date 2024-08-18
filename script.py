@@ -1,14 +1,6 @@
-<<<<<<< Updated upstream
 from cloudAuto.paquetes.aws import Browser
 from cloudAuto import Config
 from cloudAuto.constants import ActionsInstance
-=======
-from mysite.autoCloud.paquetes.aws import Browser
-
-from mysite.autoCloud import Config
-from mysite.autoCloud.constants import ActionsInstance, StatusInstance
-
->>>>>>> Stashed changes
 
 config = Config()
 browser = Browser()

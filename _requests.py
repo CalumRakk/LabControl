@@ -15,6 +15,8 @@ go_to_url = {
 # )
 
 response = requests.get(
-    "http://127.0.0.1:8000/host/api/browser", headers=headers, json=go_to_url
+    "http://127.0.0.1:8000/host/api/status/?format=json&random=${Math.random()}",
+    headers=headers,
+    json=go_to_url,
 )
 print(response.text)
