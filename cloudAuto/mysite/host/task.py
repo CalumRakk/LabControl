@@ -40,3 +40,10 @@ def go_to_url(url):
     browser.go_url(url)
     stop_browser.apply_async(countdown=10)
     return True
+
+
+@shared_task
+def get_status():
+    browser = Browser()
+
+    return {"browser_status": browser.status.value, "pc_status": None}

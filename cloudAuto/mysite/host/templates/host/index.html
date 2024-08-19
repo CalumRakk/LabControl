@@ -5,31 +5,19 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Control de Navegador y PC</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        margin: 0;
-      }
-      #statusPanel {
-        margin: 20px 0;
-      }
-      button {
-        padding: 10px 20px;
-        margin: 10px;
-      }
-    </style>
+    <link rel="stylesheet" href="{% static 'host/style.css' %}" nonce="" />
   </head>
   <body>
     {% csrf_token %}
     <h1>Control de Navegador y PC</h1>
 
     <div id="menu">
-      <button id="loadBrowserButton">Cargar Navegador</button>
+      <button
+        id="loadBrowserButton"
+        class="load-more--loading load-more--loading"
+      >
+        Cargar Navegador
+      </button>
     </div>
 
     <div id="statusPanel">
@@ -37,7 +25,7 @@
       <span id="browserStatus">{{ browser_status.translate }}</span>
     </div>
 
-    <div id="pcControl" style="display: none">
+    <div id="pcControl">
       <button id="turnOnPCButton">Encender PC</button>
       <button id="turnOffPCButton">Apagar PC</button>
       <div id="pcStatusPanel">

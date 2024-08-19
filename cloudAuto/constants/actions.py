@@ -34,8 +34,9 @@ ACTIONS_SPANISH = {
 
 class Action(Enum):
     startBrowser = "startBrowser"
-    startPC = "startPC"
+    startServerMinecraft = "startServerMinecraft"
     stopBrowser = "stopBrowser"
-    stopPC = "stopPC"
+    stopServerMinecraft = "stopServerMinecraft"
     go_to_url = "go_to_url"
     checkTask = "checkTask"
+    getStatus = "getStatus"

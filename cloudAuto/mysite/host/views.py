@@ -2,7 +2,7 @@ from django.core.cache import cache
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from host.task import go_to_url, start_browser
+from host.task import go_to_url, start_browser, stop_browser, get_status
 from celery.result import AsyncResult
 from django.shortcuts import render
 from django.views.decorators.cache import cache_page
@@ -10,24 +10,13 @@ import json
 from cloudAuto.constants import Action
 
 
-@api_view(["GET"])
-def hello_world(request):
-    # task = get_status.delay()
-    # result = AsyncResult(task.id)
-
-    # if result.ready():
-    #     browser_status = cache.get("browser_status")
-    #     return Response({"browser_status": "browser_status"})
-
-    return Response({"message": "pending"})
-
-
 class BrowserControlView(APIView):
     def post(self, request):
         # {"action": "startBrowser"}
         # {"action": "go_to_url","url": "https://www.google.com"}
         # {"action": "checkTask","task_id": "d9e268c1-65bb-47d8-8326-2395c33541d9"}
-        action_data = request.data.get("action")
+        # {"action": "getStatus"}
+        action_data = request.data.get("action", "")
 
         if not hasattr(Action, action_data):
             return Response({"message": "error"}, status=400)
@@ -38,7 +27,6 @@ class BrowserControlView(APIView):
             return Response(
                 {"action": action.value, "status": task.status, "task_id": task.id}
             )
-
         elif action == Action.go_to_url:
             url = request.data.get("url", "")
             if not (isinstance(url, str) and url.startswith("http")):
@@ -63,7 +51,11 @@ class BrowserControlView(APIView):
                     "info": task.info,
                 }
             )
-
+        elif action == Action.getStatus:
+            task = get_status.delay()
+            return Response(
+                {"action": action.value, "status": task.status, "task_id": task.id}
+            )
         return Response({"message": "error"}, status=400)
 
         # elif action == "go_to_url":
