@@ -22,8 +22,9 @@ def start_browser():
     browser = Browser()
     if browser.status == BrowserStatus.Stopped:
         cache.set("browser_status", BrowserStatus.Running.value)
+
     stop_browser.apply_async(countdown=10)
-    browser.context
+    browser.load_aws()
     return True
 
 
