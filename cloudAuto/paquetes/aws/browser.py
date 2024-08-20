@@ -18,10 +18,10 @@ from ...constants import ActionsInstance, StatusInstance, StatusLab
 from ...utils import sleep_program
 from ...singleton import SingletonMeta
 from .constants import *
-from .methods import Methods
+from .base_browser_handler import BaseBrowserHandler
 
 
-class Browser(Methods, metaclass=SingletonMeta):
+class Browser(BaseBrowserHandler, metaclass=SingletonMeta):
     def __init__(self, headless=False):
         super().__init__(headless=headless)
 

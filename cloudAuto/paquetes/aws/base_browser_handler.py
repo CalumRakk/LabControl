@@ -258,6 +258,11 @@ class Methods(Properties):
             ).click()
 
 
+class BaseBrowserHandler(property, Methods):
+    def __init__(self, headless=False):
+        super().__init__(headless=headless)
+
+
 def is_login(page: Page) -> bool:
     """Devuelve True si la url de la pagina contine la palabra 'login'"""
     if "login" in page.url.lower():
