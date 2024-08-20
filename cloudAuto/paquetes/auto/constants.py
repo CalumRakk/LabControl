@@ -47,8 +47,8 @@ PARAMS_STARTAWS = {
 }
 
 REQUIRED_COOKIE_KEYS = [
-    "vocareum_entry_link",
-    "PHPSESSID",
+    # "vocareum_entry_link",
+    # "PHPSESSID",
     "logintoken",
     "tokenExpire",
     "usertoken",
@@ -58,7 +58,7 @@ REQUIRED_COOKIE_KEYS = [
     "myfolder",
     "currentcourse",
     "currentassignment",
-    "userassignment",
+    # "userassignment",
 ]
 
 REQUIRED_COOKIE_FOR_DescribeInstances = [

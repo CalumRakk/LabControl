@@ -2,7 +2,8 @@ import random
 import json
 from pathlib import Path
 import time
-from urllib.parse import urljoin
+import re
+from urllib.parse import urljoin, parse_qs
 
 from playwright.sync_api import (
     sync_playwright,
@@ -118,8 +119,37 @@ class Methods(Properties):
         #     config.save()
 
         locate_instance.click()
-        time.sleep(5)
+
+        self._wait_for_lab_load(page)
+
         return page
+
+    def _wait_for_lab_load(self, page: Page, save=True):
+        config = Config()
+        # panel2-iframe
+        frame = page.locator("xpath=//div[@id='content']").frame_locator("iframe").first
+
+        element = frame.locator("xpath=//div[@id='launchclabsbtn']")
+        element.wait_for()
+
+        if save:
+            # TODO: corregir el sobreescribiendo de archivo de cookies
+            cookies_vocareum = self.context.cookies(VOCAREUM_URL)
+            path = config["filepath"]["cookies_vocareum"]
+            Path(path).write_text(json.dumps(cookies_vocareum))
+
+            # guarda varios datos claves obtenidos de la URL insertada en el iframe
+            path = Path(config["filepath"]["data_vocareum"])
+            if not path.exists():
+                reset_element = frame.locator("xpath=//div[@id='ResetAssignmentBtn']")
+                reset_attr_onclick = reset_element.get_attribute("onclick")
+                query_string = re.search(r"(?<=').*(?=')", reset_attr_onclick).group()
+                data = {}
+                for key, value in parse_qs(query_string.split("?")[1]).items():
+                    data.update({key: value[0]})
+                path.write_text(json.dumps(data))
+
+        return True
 
     def _login(self, username, password, save=True):
         """Inicia sesión y carga el laboratorio"""
