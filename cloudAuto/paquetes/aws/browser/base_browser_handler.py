@@ -3,20 +3,19 @@ import json
 from pathlib import Path
 import time
 import re
-from urllib.parse import urljoin, parse_qs
+from urllib.parse import parse_qs
 
 from playwright.sync_api import (
     sync_playwright,
-    expect,
     Page,
     BrowserContext,
     FrameLocator,
 )
 
-from ... import Config
-from ...constants import ActionsInstance, StatusInstance, StatusLab
-from ...utils import sleep_program
-from .constants import *
+from cloudAuto import Config
+from cloudAuto.constants import ActionsInstance, StatusInstance, StatusLab
+from cloudAuto.utils import sleep_program
+from cloudAuto.paquetes.aws.constants import *
 
 user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36"
 
@@ -258,7 +257,7 @@ class Methods(Properties):
             ).click()
 
 
-class BaseBrowserHandler(property, Methods):
+class BaseBrowserHandler(Methods, Properties):
     def __init__(self, headless=False):
         super().__init__(headless=headless)
 

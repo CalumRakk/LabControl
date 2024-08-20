@@ -1,23 +1,7 @@
-import random
-import json
-from pathlib import Path
-import time
-from urllib.parse import urljoin
+from playwright.sync_api import Page
 
-from playwright.sync_api import (
-    sync_playwright,
-    expect,
-    Page,
-    BrowserContext,
-    FrameLocator,
-)
-
-
-from ... import Config
-from ...constants import ActionsInstance, StatusInstance, StatusLab
-from ...utils import sleep_program
-from ...singleton import SingletonMeta
-from .constants import *
+from cloudAuto.constants import ActionsInstance, StatusInstance, StatusLab
+from cloudAuto.singleton import SingletonMeta
 from .base_browser_handler import BaseBrowserHandler
 
 
