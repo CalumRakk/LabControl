@@ -1,8 +1,5 @@
-from cloudAuto.paquetes.aws import Browser
-from cloudAuto import Config
-from cloudAuto.constants import ActionsInstance
+from cloudAuto.paquetes.aws import LabAWS
 
-config = Config()
-browser = Browser()
-
-browser.load_aws()
+lab = LabAWS()
+data = lab.getaws()
+print(data)

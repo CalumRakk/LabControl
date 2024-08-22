@@ -44,3 +44,13 @@ class PCStatus(Enum):
     @property
     def is_off(self) -> bool:
         return not self in [PCStatus.Running]
+
+
+class LabStatus(Enum):
+    stopped = "stopped"
+    stopping = "stopping"
+    in_creation = "in creation"
+    ready = "ready"
+
+
+LAB_NOT_STARTED = "Lab status: not started"
