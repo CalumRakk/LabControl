@@ -13,11 +13,12 @@ from labcontrol import log_decorator, Config
 from . import lab_aws_utils as utils
 from .lab_aws_utils import login_decorator
 from ..constants import *
+from labcontrol.singleton import SingletonMeta
 
 logger = logging.getLogger(__name__)
 
 
-class LabAWS:
+class LabAWS(metaclass=SingletonMeta):
     @property
     def status(self):
         """

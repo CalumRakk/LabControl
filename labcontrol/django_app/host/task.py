@@ -2,19 +2,10 @@
 from celery import shared_task
 import json
 
-from labcontrol.api_aws import Browser
+from labcontrol.api_aws import Browser, LabAWS
 from labcontrol.api_aws.constants import BrowserStatus, PCStatus
 import redis
 from django.core.cache import cache
-
-# conn = redis.Redis(host="localhost", port=6379, db=0)
-
-# # Inializando la base de datos con la configuración inicial
-# status = {
-#     "browser_status": BrowserStatus.Unknown.value,
-#     "pc_status": PCStatus.Unknown.value,
-# }
-# conn.set("status", json.dumps(status))
 
 
 @shared_task
@@ -42,6 +33,6 @@ def go_to_url(url):
 
 @shared_task
 def get_status():
-    browser = Browser()
-
-    return {"browser_status": browser.status.value, "pc_status": None}
+    lab = LabAWS()
+    status = lab.status
+    return {"lab_status": status.value}

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="es">
+{% load static %}
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Control de Navegador y PC</title>
+  <link rel="stylesheet" href="{% static 'host/style.css' %}" nonce="" />
+</head>
+
+<body>
+  {% csrf_token %}
+  <h1>Control del Servidor</h1>
+
+  <div id="statusPanel">
+    Estado del Servidor:
+    <span id="browserStatus">{{ browser_status.translate }}</span>
+  </div>
+
+  <div id="pcControl">
+    <button id="turnOnPCButton" class="load-more--loading">Encender Servidor</button>
+    <button id="turnOffPCButton" class="load-more--loading">Apagar Servidor</button>
+  </div>
+
+  <script src="{% static 'host/script.js' %}"></script>
+</body>
+
+</html>
