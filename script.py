@@ -1,5 +1,5 @@
-from cloudAuto.paquetes.aws import LabAWS
-from cloudAuto.paquetes.aws.constants import LabStatus
+from cloudAuto import LabAWS
+from cloudAuto.api_aws.constants import LabStatus
 
 lab = LabAWS()
 if lab.status == LabStatus.ready:

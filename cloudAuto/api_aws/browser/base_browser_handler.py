@@ -13,9 +13,8 @@ from playwright.sync_api import (
 )
 
 from cloudAuto import Config
-from cloudAuto.constants import ActionsInstance, StatusInstance, StatusLab
+from ..constants import *
 from cloudAuto.utils import sleep_program
-from cloudAuto.paquetes.aws.constants import *
 
 user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36"
 

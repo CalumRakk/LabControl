@@ -12,7 +12,7 @@ import requests
 from cloudAuto import log_decorator, Config
 from . import lab_aws_utils as utils
 from .lab_aws_utils import login_decorator
-from .constants import LAB_NOT_STARTED, AWSAction, LabStatus, VOCAREUM_VCPU_URL, HEADERS
+from ..constants import *
 
 logger = logging.getLogger(__name__)
 

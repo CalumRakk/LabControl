@@ -3,8 +3,10 @@ import configparser
 from pathlib import Path
 import os
 
+import pkg_resources
 
-CONFIG_FILEPATH = "/home/leo/Escritorio/github Leo/Cloud-Labs-Auto/config.ini"
+BASE_DIR = Path(__file__).resolve().parent.parent
+CONFIG_FILEPATH = BASE_DIR / "config.ini"
 
 
 class ManagerConfig(metaclass=SingletonMeta):
