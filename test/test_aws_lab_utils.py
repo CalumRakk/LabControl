@@ -1,5 +1,5 @@
 import unittest
-from cloudAuto.api_aws.lab_aws.lab_aws_utils import (
+from labcontrol.api_aws.lab_aws.lab_aws_utils import (
     ReadyLabSessionRegex,
     StoppedLabSessionRegex,
     regex_lab_status,

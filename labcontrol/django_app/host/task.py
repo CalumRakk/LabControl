@@ -2,8 +2,8 @@
 from celery import shared_task
 import json
 
-from cloudAuto.api_aws import Browser
-from cloudAuto.api_aws.constants import BrowserStatus, PCStatus
+from labcontrol.api_aws import Browser
+from labcontrol.api_aws.constants import BrowserStatus, PCStatus
 import redis
 from django.core.cache import cache
 

@@ -7,7 +7,7 @@ from celery.result import AsyncResult
 from django.shortcuts import render
 from django.views.decorators.cache import cache_page
 import json
-from cloudAuto.api_aws.constants import Action
+from labcontrol.api_aws.constants import Action
 
 
 class BrowserControlView(APIView):

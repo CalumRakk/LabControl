@@ -12,9 +12,9 @@ from playwright.sync_api import (
     FrameLocator,
 )
 
-from cloudAuto import Config
+from labcontrol import Config
 from ..constants import *
-from cloudAuto.utils import sleep_program
+from labcontrol.utils import sleep_program
 
 user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36"
 

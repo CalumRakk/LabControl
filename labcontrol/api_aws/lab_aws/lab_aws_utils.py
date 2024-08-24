@@ -7,7 +7,7 @@ from pathlib import Path
 
 import requests
 
-from cloudAuto import Config
+from labcontrol import Config
 from ..constants import LabStatus, LAB_NOT_STARTED, LOGIN_AGAIN_MESSAGE, AWSAction
 from ..browser import Browser
 

@@ -1,7 +1,7 @@
 from playwright.sync_api import Page
 
 from ..constants import ActionsInstance, StatusInstance, StatusLab
-from cloudAuto.singleton import SingletonMeta
+from labcontrol.singleton import SingletonMeta
 from .base_browser_handler import BaseBrowserHandler
 
 
