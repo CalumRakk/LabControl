@@ -10,3 +10,9 @@ cookies_browser.json
 test.py
 test2.py
 *.ini
+good/
+.env/
+*.egg-info
+script.py
+vcr_cassettes/
+index.html

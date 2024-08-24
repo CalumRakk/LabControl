@@ -1,0 +1,38 @@
+body {
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  margin: 0;
+}
+#statusPanel {
+  margin: 20px 0;
+}
+button {
+  padding: 10px 20px;
+  margin: 10px;
+}
+
+.load-more--loading {
+  animation: rotate 1.5s linear infinite;
+  animation-delay: 0.2s;
+  background-color: transparent;
+  border: 0.3em solid #e1e1e1;
+  border-radius: 1.5em;
+  border-top-color: #444;
+  box-sizing: border-box;
+  height: 3em;
+  color: transparent;
+  padding: 0;
+  pointer-events: none;
+  width: 3em;
+  user-select: none;
+}
+
+@keyframes rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
