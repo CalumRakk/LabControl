@@ -1,9 +1,6 @@
 from .singleton import SingletonMeta
 import configparser
 from pathlib import Path
-import os
-
-import pkg_resources
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 CONFIG_FILEPATH = BASE_DIR / "config.ini"
