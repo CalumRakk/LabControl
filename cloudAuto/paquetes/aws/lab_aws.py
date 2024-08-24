@@ -176,7 +176,7 @@ class LabAWS:
             return {"data": None, "error": msg}
 
         match = utils.regex_lab_status.search(response.text).group()
-        status = getattr(LabStatus, match)
+        status = getattr(LabStatus, match.replace(" ", "_"))
         return {"data": {"status": status}, "error": None}
 
     @login_decorator
