@@ -34,7 +34,7 @@ class LabAWS:
             hasattr(self, "_status") is False
             or (current_time - self._status_cache_time) > 5
         ):
-            response = self.getawsstatus()
+            response = self._getawsstatus()
             self._status = response["data"]["status"]
             self._status_cache_time = time.time()
         return self._status
@@ -88,21 +88,42 @@ class LabAWS:
         return values
 
     @login_decorator
-    def getaws(self) -> dict:
+    def _getawsstatus(self) -> dict:
         """
-        Realiza una solicitud para obtener el estado actual del laboratorio en Vocareum y procesa la respuesta.
+        Obtiene el estado actual del laboratorio desde la API.
 
         Returns:
             dict: Un diccionario que contiene los siguientes elementos:
                 - "data": Un sub-diccionario con:
-                    - "status": El estado del laboratorio (iniciado, detenido, etc.).
+                    - "status": El estado del laboratorio extraído de la respuesta.
+                - "error": `None` si la solicitud y el procesamiento fueron exitosos, o un mensaje de error si ocurrió un problema al analizar la respuesta.
+        """
+
+        response = self._make_request(AWSAction.getawsstatus)
+        root = etree.fromstring(response.text, etree.HTMLParser())
+
+        msg = utils.parse_error(root)
+        if msg:
+            return {"data": None, "error": msg}
+
+        match = utils.regex_lab_status.search(response.text).group()
+        status = getattr(LabStatus, match.replace(" ", "_"))
+        return {"data": {"status": status}, "error": None}
+
+    @login_decorator
+    def getaws(self) -> dict:
+        """
+        Realiza una solicitud para obtener informacion de las sessiones del laboratorio en Vocareum y procesa la respuesta.
+
+        Returns:
+            dict: Un diccionario que contiene los siguientes elementos:
+                - "data": Un sub-diccionario con:
+                    - "status": El estado del laboratorio antes de enviar la solicitud getaws.
                     - "sessions": Los tiempos de sesión extraídos del contenido HTML.
                     - "expiretime": El tiempo de expiración de la sesión.
                 - "error": `None` si la solicitud y el procesamiento fueron exitosos, o un mensaje de error si ocurrió un problema.
         """
-
-        response_status = self.getawsstatus()
-        status = response_status["data"]["status"]
+        status = self.status
         if status == LabStatus.in_creation:
             return {"data": {"status": status}, "error": None}
 
@@ -112,9 +133,6 @@ class LabAWS:
         if msg_error:
             return {"data": None, "error": msg_error}
 
-        if status == LabStatus.stopped:
-            # font solo está disponible cuando el labotorio está detenido.
-            status = getattr(LabStatus, root.find(".//font").text)
         sessiones = utils.extract_session_times(root, status)
         expiretime = utils.get_expire_time(root)
         return {
@@ -127,7 +145,7 @@ class LabAWS:
         }
 
     @login_decorator
-    def startaws(self):
+    def start(self):
         """
         Envía una solicitud a la API para iniciar o reiniciar el laboratorio.
 
@@ -157,30 +175,7 @@ class LabAWS:
         return {"data": values, "error": None}
 
     @login_decorator
-    def getawsstatus(self) -> dict:
-        """
-        Obtiene el estado actual del laboratorio desde la API.
-
-        Returns:
-            dict: Un diccionario que contiene los siguientes elementos:
-                - "data": Un sub-diccionario con:
-                    - "status": El estado del laboratorio extraído de la respuesta.
-                - "error": `None` si la solicitud y el procesamiento fueron exitosos, o un mensaje de error si ocurrió un problema al analizar la respuesta.
-        """
-
-        response = self._make_request(AWSAction.getawsstatus)
-        root = etree.fromstring(response.text, etree.HTMLParser())
-
-        msg = utils.parse_error(root)
-        if msg:
-            return {"data": None, "error": msg}
-
-        match = utils.regex_lab_status.search(response.text).group()
-        status = getattr(LabStatus, match.replace(" ", "_"))
-        return {"data": {"status": status}, "error": None}
-
-    @login_decorator
-    def endaws(self, force_request=False):
+    def stop(self, force_request=False):
         """
         Envía una solicitud para detener el laboratorio si está en ejecución.
 
@@ -192,17 +187,17 @@ class LabAWS:
         Returns:
             dict: Un diccionario que contiene:
                 - "data": Los datos procesados extraídos de la respuesta JSON si la solicitud fue exitosa.
+                    - status: el estado del laboratorio antes de realizar la accion de detener a la api.
                 - "error": `None` si la solicitud y el procesamiento fueron exitosos, o un mensaje de error en caso de problemas al analizar la respuesta JSON o al extraer los datos.
         """
         # Envia a la api la accion de stopped al laboratorio solo si está iniciado.
         # Si se desea forzar la acccion de stopped sin importar el estado del laboratorio, se debe establacer force_request=True
         # La función endaws siempre devuelve un JSON, independientemente del estado del laboratorio.
-
-        response_status = self.getawsstatus()
-        if force_request is False and response["data"]["status"] == LabStatus.stopped:
-            return response_status
+        status = self.status
+        if force_request is False and status == LabStatus.stopped:
+            return {"data": {"status": status}, "error": None}
         else:
-            status = response_status["data"]["status"]
+            status = status
 
         response = self._make_request(AWSAction.endaws)
         try:

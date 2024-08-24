@@ -8,27 +8,8 @@ from pathlib import Path
 import requests
 
 from cloudAuto import Config
-from .constants import LabStatus, LAB_NOT_STARTED, LOGIN_AGAIN_MESSAGE
-from .browser import Browser
-from .constants import AWSAction
-
-
-HEADERS = {
-    "accept": "*/*",
-    "accept-language": "es-419,es;q=0.9",
-    "priority": "u=1, i",
-    "sec-ch-ua": '"Not;A=Brand";v="24", "Chromium";v="128"',
-    "sec-ch-ua-mobile": "?0",
-    "sec-ch-ua-platform": '"Windows"',
-    "sec-fetch-dest": "empty",
-    "sec-fetch-mode": "cors",
-    "sec-fetch-site": "same-origin",
-    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
-    "x-requested-with": "XMLHttpRequest",
-}
-
-
-VOCAREUM_VCPU_URL = "https://labs.vocareum.com/util/vcput.php"
+from ..constants import LabStatus, LAB_NOT_STARTED, LOGIN_AGAIN_MESSAGE, AWSAction
+from ..browser import Browser
 
 
 COOKIE_KEYS_FOR_REQUEST = [
@@ -181,10 +162,6 @@ def parse_error(root):
     return None
 
 
-# def extract_content(root):
-#     return " ".join([text.strip() for text in root.find("body").itertext()])
-
-
 def get_expire_time(root):
     expiretime = int(root.find(".//span[@id='vlab-expiretime']").text)
     return datetime.fromtimestamp(expiretime)
@@ -207,45 +184,3 @@ def generate_aws_params(action: AWSAction, data_vocareum: dict):
         "v": "0",
         "vockey": data_vocareum["vockey"],
     }
-
-
-def load_paths() -> tuple[Path, Path]:
-    """
-    Devuelve las rutas de los archivos `data_vocareum` y `cookies_vocareum` a partir de Config.
-
-    Returns:
-        tuple[Path, Path]: Una tupla que contiene las rutas a los archivos `data_vocareum` y `cookies_vocareum`.
-    """
-
-    config = Config()
-    path_data_vocareum = Path(config["filepath"]["data_vocareum"])
-    path_cookies_vocareum = Path(config["filepath"]["cookies_vocareum"])
-
-    return path_data_vocareum, path_cookies_vocareum
-
-
-def load_data_and_cookies(path_data_vocareum: Path, path_cookies_vocareum: Path):
-    """
-    Carga los datos y las cookies desde las rutas especificadas.
-
-    Args:
-        path_data_vocareum (Path): Ruta al archivo `data_vocareum`.
-        path_cookies_vocareum (Path): Ruta al archivo `cookies_vocareum`.
-
-    Returns:
-        tuple: Datos de `data_vocareum` y cookies filtradas de `cookies_vocareum`.
-    """
-
-    data_vocareum = json.loads(path_data_vocareum.read_text())
-    cookies_vocareum = filter_cookies_for_request(path_cookies_vocareum)
-    return data_vocareum, cookies_vocareum
-
-
-def make_request_to_cloud(action: AWSAction, data_vocareum, cookies_vocareum):
-    response = requests.get(
-        url=VOCAREUM_VCPU_URL,
-        cookies=cookies_vocareum,
-        params=generate_aws_params(action, data_vocareum),
-        headers=HEADERS,
-    )
-    return response
