@@ -15,6 +15,25 @@ PATH_COOKIES = Path("cookies.json")
 
 PATH_COOKIES_BROWSER.parent.mkdir(exist_ok=True, parents=True)
 
+LOGIN_AGAIN_MESSAGE = "Please login again"
+
+HEADERS = {
+    "accept": "*/*",
+    "accept-language": "es-419,es;q=0.9",
+    "priority": "u=1, i",
+    "sec-ch-ua": '"Not;A=Brand";v="24", "Chromium";v="128"',
+    "sec-ch-ua-mobile": "?0",
+    "sec-ch-ua-platform": '"Windows"',
+    "sec-fetch-dest": "empty",
+    "sec-fetch-mode": "cors",
+    "sec-fetch-site": "same-origin",
+    "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
+    "x-requested-with": "XMLHttpRequest",
+}
+
+
+VOCAREUM_VCPU_URL = "https://labs.vocareum.com/util/vcput.php"
+
 
 class BrowserStatus(Enum):
     Stopped = "Stopped"
@@ -51,6 +70,13 @@ class LabStatus(Enum):
     stopping = "stopping"
     in_creation = "in creation"
     ready = "ready"
+
+
+class AWSAction(Enum):
+    getaws = "getaws"
+    startaws = "startaws"  # Sustituye "otheraction" con el otro valor que necesites
+    getawsstatus = "getawsstatus"
+    endaws = "endaws"
 
 
 LAB_NOT_STARTED = "Lab status: not started"

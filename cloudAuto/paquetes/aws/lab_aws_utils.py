@@ -8,8 +8,9 @@ from pathlib import Path
 import requests
 
 from cloudAuto import Config
-from .constants import LabStatus
+from .constants import LabStatus, LAB_NOT_STARTED, LOGIN_AGAIN_MESSAGE
 from .browser import Browser
+from .constants import AWSAction
 
 
 HEADERS = {
@@ -46,32 +47,34 @@ COOKIE_KEYS_FOR_REQUEST = [
 def login_decorator(func):
     def wrapper(*args, **kwargs):
         data = func(*args, **kwargs)
-        if data["error"] is None:
-            return data
+        if data["error"] == LOGIN_AGAIN_MESSAGE:
+            browser = Browser()
+            browser.load_aws()
+            return func(*args, **kwargs)
 
-        browser = Browser()
-        browser.load_aws()
-        return func(*args, **kwargs)
+        return data
 
     return wrapper
 
 
-regex_hours = r"\s?\d\d:\d\d:\d\d"  # 00:01:00
-regex_date = r"\d{4}-\d+-\d+T\d+:\d+:\d+-\d{4}"  # 2024-08-20T18:18:55-0700
-regex_minutes_pattern = r"\s?(\(\d+\s\w+\))"  # (4680 minutes)
-regex_hdate_and_hours = rf"\d+\s\w+\s{regex_hours}"  # 3 days 06:00:00 (4680 minutes)
+REGEX_HOURS = r"\s?\d\d:\d\d:\d\d"  # 00:01:00
+REGEX_DATE = r"\d{4}-\d+-\d+T\d+:\d+:\d+-\d{4}"  # 2024-08-20T18:18:55-0700
+REGEX_MINUTES_PATTERN = r"\s?(\(\d+\s\w+\))"  # (4680 minutes)
+REGEX_HDATE_AND_HOURS = rf"\d+\s\w+\s{REGEX_HOURS}"  # 3 days 06:00:00 (4680 minutes)
+
+regex_lab_status = re.compile("(?<=Lab status: )\w.*(?=<br>)")
 
 
 class ReadyLabSessionRegex(Enum):
     """Regex para capturar los tiempos de session del Laboratorio cuando está iniciado."""
 
     remaining_time = re.compile(
-        rf"Remaining session time:\s{regex_hours}{regex_minutes_pattern}"
+        rf"Remaining session time:\s{REGEX_HOURS}{REGEX_MINUTES_PATTERN}"
     )
-    session_started = re.compile(f"Session started at:\s{regex_date}")
-    session_ended = re.compile(f"Session to end(.*)?at:\s{regex_date}")
+    session_started = re.compile(f"Session started at:\s{REGEX_DATE}")
+    session_ended = re.compile(f"Session to end(.*)?at:\s{REGEX_DATE}")
     accumulated_lab_time = re.compile(
-        rf"Accumulated lab time:\s?({regex_hours}|{regex_hdate_and_hours}){regex_minutes_pattern}"
+        rf"Accumulated lab time:\s?({REGEX_HOURS}|{REGEX_HDATE_AND_HOURS}){REGEX_MINUTES_PATTERN}"
     )
 
 
@@ -79,23 +82,29 @@ class StoppedLabSessionRegex(Enum):
     """Regex para capturar los tiempos de session del Laboratorio cuando está detenido."""
 
     session_started = re.compile(f"Session started at:\s-0001-11-30T00:00:00-0752")
-    session_stopped = re.compile(f"Session stopped(.*)?at \s?{regex_date}")
+    session_stopped = re.compile(f"Session stopped(.*)?at \s?{REGEX_DATE}")
     accumulated_lab_time = re.compile(
-        rf"Accumulated lab time:\s?({regex_hours}|{regex_hdate_and_hours}){regex_minutes_pattern}"
+        rf"Accumulated lab time:\s?({REGEX_HOURS}|{REGEX_HDATE_AND_HOURS}){REGEX_MINUTES_PATTERN}"
     )
 
 
-def extract_session_times(content, status: LabStatus):
+def extract_session_times(root, status: LabStatus):
     """
-    Extrae los tiempos de sesión del Cloud Labs de Vocareum
+    Extrae los tiempos de sesión del contenido HTML basado en el estado del laboratorio.
 
     Args:
-        content (str): El contenido en el que se buscarán los tiempos de sesión.
+        root: El contenido de la respuesta HTTP parseado lxml
+        status (LabStatus): El estado del laboratorio, que puede ser `LabStatus.ready` o `LabStatus.stopped`.
 
     Returns:
-        dict: Un diccionario que contiene los tiempos de sesión extraídos, donde las claves son los nombres de los miembros de `ReadyLabSessionRegex` y los valores son los tiempos de sesión encontrados.
+        dict: Un diccionario con los tiempos de sesión extraídos, donde las claves corresponden a los nombres
+              de los miembros del enum relacionado con el estado del laboratorio. Devuelve `None` si el estado
+              del laboratorio no es 'ready' ni 'stopped'.
     """
 
+    content = "".join([text for text in root.find(".//body").itertext()])
+
+    # Con el status se determina que regex usar para extraer los tiempos de sesión
     if status == LabStatus.ready:
         regex_enum = ReadyLabSessionRegex
     elif status == LabStatus.stopped:
@@ -111,7 +120,10 @@ def extract_session_times(content, status: LabStatus):
 
 
 def extract_status(root) -> LabStatus:
-    """Devuelve el status ready si no encuentra en el root el status stopped"""
+    """Devuelve un estado especifico del laboratorio si en el root encuentra uno de los siguientes casos:
+    - Si encuentra un elemento font devuelve LabStatus.stopped
+    -
+    """
     element = root.find(".//font")
     if element is not None:
         return LabStatus.stopped
@@ -151,14 +163,21 @@ def filter_cookies_for_request(cookies_browser: Union[list[dict], Path]) -> dict
 
 def parse_error(root):
     """
-    Devuelve un mensaje de error si se encuentra un elemento error:invalid_session en root, de lo contrario, devuelve None
-
+    Devuelve un mensaje de error si encuentra uno de los siguientes casos en el root:
+    - Si encuentra el elemento error:invalid_session
+    - Si el body del root es igual al texto de la constante LAB_NOT_STARTED
+    - Si ninguno de los casos anteriores se cumple, devuelve None
     Args:
         root: El elemento raíz del árbol XML/HTML.
     """
     target = root.find(".//error:invalid_session")
     if target is not None:
-        return target.text.strip()
+        return target.text.strip()  # Please login again
+
+    content = "".join([text for text in root.find(".//body").itertext()])
+    if content == LAB_NOT_STARTED:
+        return LAB_NOT_STARTED
+
     return None
 
 
@@ -177,12 +196,6 @@ def get_aws_credentials(root):
 
 
 ####
-
-
-class AWSAction(Enum):
-    getaws = "getaws"
-    startaws = "startaws"  # Sustituye "otheraction" con el otro valor que necesites
-    getawsstatus = "getawsstatus"
 
 
 def generate_aws_params(action: AWSAction, data_vocareum: dict):
@@ -228,21 +241,11 @@ def load_data_and_cookies(path_data_vocareum: Path, path_cookies_vocareum: Path)
     return data_vocareum, cookies_vocareum
 
 
-def make_request_get_aws(data_vocareum, cookies_vocareum):
+def make_request_to_cloud(action: AWSAction, data_vocareum, cookies_vocareum):
     response = requests.get(
         url=VOCAREUM_VCPU_URL,
         cookies=cookies_vocareum,
-        params=generate_aws_params(AWSAction.getaws, data_vocareum),
-        headers=HEADERS,
-    )
-    return response
-
-
-def make_request_get_aws_status(data_vocareum, cookies_vocareum):
-    response = requests.get(
-        url=VOCAREUM_VCPU_URL,
-        cookies=cookies_vocareum,
-        params=generate_aws_params(AWSAction.getawsstatus, data_vocareum),
+        params=generate_aws_params(action, data_vocareum),
         headers=HEADERS,
     )
     return response

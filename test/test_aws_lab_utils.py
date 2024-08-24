@@ -2,6 +2,7 @@ import unittest
 from cloudAuto.paquetes.aws.lab_aws_utils import (
     ReadyLabSessionRegex,
     StoppedLabSessionRegex,
+    regex_lab_status,
 )
 
 
@@ -66,6 +67,19 @@ class Test_StoppedLabSessionRegex(unittest.TestCase):
         match = ReadyLabSessionRegex.accumulated_lab_time.value.search(sample_text)
         self.assertIsNotNone(match)
         self.assertEqual(match.group(), sample_text)
+
+
+class Test_others(unittest.TestCase):
+    def get_lab_status(self):
+        sample_text = "Lab status: stopped<br>"
+        match = regex_lab_status.search(sample_text)
+        self.assertIsNotNone(match)
+        self.assertEqual(match.group(), "stopped")
+
+        sample_text2 = "Lab status: in creation<br>"
+        match = regex_lab_status.search(sample_text2)
+        self.assertIsNotNone(match)
+        self.assertEqual(match.group(), "stopped")
 
 
 if __name__ == "__main__":

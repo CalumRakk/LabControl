@@ -15,3 +15,5 @@ good/
 *.egg-info
 script.py
 _*
+vcr_cassettes/
+index.html
