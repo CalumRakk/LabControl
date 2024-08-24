@@ -2,6 +2,7 @@ import logging
 import json
 from typing import Union
 from pathlib import Path
+import time
 
 from lxml import etree
 import vcr
@@ -17,6 +18,26 @@ logger = logging.getLogger(__name__)
 
 
 class LabAWS:
+    @property
+    def status(self):
+        """
+        Obtiene el estado actual del laboratorio.
+
+        Devuelve el estado utilizando un caché interno durante 5 segundos. Si el caché ha expirado o no existe, se realiza una solicitud para obtener el estado más reciente.
+
+        Returns:
+            El estado actual del laboratorio.
+        """
+
+        current_time = time.time()
+        if (
+            hasattr(self, "_status") is False
+            or (current_time - self._status_cache_time) > 5
+        ):
+            response = self.getawsstatus()
+            self._status = response["data"]["status"]
+            self._status_cache_time = time.time()
+        return self._status
 
     def _make_request(self, action: AWSAction) -> Union[Response, dict]:
         """
@@ -79,12 +100,14 @@ class LabAWS:
                     - "expiretime": El tiempo de expiración de la sesión.
                 - "error": `None` si la solicitud y el procesamiento fueron exitosos, o un mensaje de error si ocurrió un problema.
         """
+
         response_status = self.getawsstatus()
         status = response_status["data"]["status"]
+        if status == LabStatus.in_creation:
+            return {"data": {"status": status}, "error": None}
 
         response = self._make_request(AWSAction.getaws)
         root = etree.fromstring(response.text, etree.HTMLParser())
-
         msg_error = utils.parse_error(root)
         if msg_error:
             return {"data": None, "error": msg_error}
@@ -172,7 +195,7 @@ class LabAWS:
                 - "error": `None` si la solicitud y el procesamiento fueron exitosos, o un mensaje de error en caso de problemas al analizar la respuesta JSON o al extraer los datos.
         """
         # Envia a la api la accion de stopped al laboratorio solo si está iniciado.
-        # Si se desea forzar la acccion de stoppeal sin importar el estado del laboratorio, se debe establacer force_request=True
+        # Si se desea forzar la acccion de stopped sin importar el estado del laboratorio, se debe establacer force_request=True
         # La función endaws siempre devuelve un JSON, independientemente del estado del laboratorio.
 
         response_status = self.getawsstatus()
