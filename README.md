@@ -1,13 +1,14 @@
-## Auto
+## LabAWS
 
-El paquete auto se utiliza para mantener activo siempre el laboratorio de AWS y en consecuencia evitar que las instancias EC2 de AWS se apaguen despues de 4 horas.
+**LabAWS** es un paquete que permite iniciar un laboratorio de AWS de manera sencilla y mantener la sesión activa automáticamente sin intervención manual. Con solo unas pocas líneas de código.
 
-Solo basta con llamar a la clase Auto del modulo auto y usar el método start()
+### Uso
+
+El siguiente ejemplo muestra cómo iniciar el laboratorio de AWS utilizando el paquete **LabAWS**:
 
 ```python
-from auto import Auto
+from cloudAuto import LabAWS
 
-auto= Auto()
-auto.start()
-
+lab = LabAWS()
+response = lab.start()
 ```
