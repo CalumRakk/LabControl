@@ -40,6 +40,7 @@ class LabAWS(metaclass=SingletonMeta):
             self._status_cache_time = time.time()
         return self._status
 
+    @login_decorator
     def _make_request(self, action: AWSAction) -> Union[Response, dict]:
         """
         Realiza una solicitud a la api de Vocareum utilizando los datos y cookies almacenados.
@@ -122,6 +123,7 @@ class LabAWS(metaclass=SingletonMeta):
                     - "status": El estado del laboratorio antes de enviar la solicitud getaws.
                     - "sessions": Los tiempos de sesión extraídos del contenido HTML.
                     - "expiretime": El tiempo de expiración de la sesión.
+                    - "aws_credentials": Las credenciales temporales AWS extraídas del contenido HTML.
                 - "error": `None` si la solicitud y el procesamiento fueron exitosos, o un mensaje de error si ocurrió un problema.
         """
         status = self.status
@@ -136,11 +138,15 @@ class LabAWS(metaclass=SingletonMeta):
 
         sessiones = utils.extract_session_times(root, status)
         expiretime = utils.get_expire_time(root)
+        aws_credentials = None
+        if status == LabStatus.ready:
+            aws_credentials = utils.get_aws_credentials(root)
         return {
             "data": {
                 "status": status,
                 "sessions": sessiones,
                 "expiretime": expiretime,
+                "aws_credentials": aws_credentials,
             },
             "error": None,
         }

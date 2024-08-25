@@ -26,12 +26,17 @@ COOKIE_KEYS_FOR_REQUEST = [
 
 
 def login_decorator(func):
+    # Solo activa el login cuando al hacer la primera solicitud de obtiene un json con un campo de error con los casos especificados en este código
     def wrapper(*args, **kwargs):
         data = func(*args, **kwargs)
-        if data["error"] == LOGIN_AGAIN_MESSAGE:
-            browser = Browser()
-            browser.load_aws()
-            return func(*args, **kwargs)
+        if isinstance(data, dict):
+            if (
+                data["error"] == LOGIN_AGAIN_MESSAGE
+                or data["error"] == "Files not found"
+            ):
+                browser = Browser()
+                browser.load_aws()
+                return func(*args, **kwargs)
 
         return data
 
@@ -168,8 +173,12 @@ def get_expire_time(root):
 
 
 def get_aws_credentials(root):
+    values = {}
     span_aws_cli = root.find(".//div[@id='clikeybox'].//span")
-    return re.findall("(\w+=\w+)", span_aws_cli.text)
+    for line in re.findall("\w+=.*", span_aws_cli.text):
+        key, value = line.split("=")
+        values.update({key: value})
+    return values
 
 
 ####
