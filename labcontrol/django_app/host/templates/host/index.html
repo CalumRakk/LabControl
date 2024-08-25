@@ -11,19 +11,26 @@
 
 <body>
   {% csrf_token %}
-  <h1>Control del Servidor</h1>
+  <main>
+    <div class="container">
+      <header>
+        <h1>Estado del Servidor</h1>
+        <div class="status">
+          <p class="h2">DESCONECTADO</p>
+        </div>
+      </header>
+      <div class="contenedor_button">
+        <div class="button load-more--loading ">
+          <span>*</span>
+          <div>Iniciar</div>
 
-  <div id="statusPanel">
-    Estado del Servidor:
-    <span id="browserStatus">{{ browser_status.translate }}</span>
-  </div>
+        </div>
+      </div>
 
-  <div id="pcControl">
-    <button id="turnOnPCButton" class="load-more--loading">Encender Servidor</button>
-    <button id="turnOffPCButton" class="load-more--loading">Apagar Servidor</button>
-  </div>
+    </div>
 
-  <script src="{% static 'host/script.js' %}"></script>
+  </main>
+
 </body>
 
 </html>
