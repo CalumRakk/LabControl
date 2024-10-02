@@ -4,7 +4,7 @@
 
 ## Configuración
 
-Antes de utilizar **LabAWS**, hay que crear un archivo de configuración con las siguientes secciones:
+Antes de utilizar **LabAWS**, hay que crear un archivo de configuración llamado ´config.ini´ con las siguientes secciones:
 
 ```ini
 [account]
@@ -22,9 +22,7 @@ Para iniciar el laboratorio de AWS utilizando el paquete **LabAWS**, sigue estos
 ```python
 from labcontrol import LabAWS
 
-# Crear una instancia de LabAWS
 lab = LabAWS()
-
-# Iniciar el laboratorio
 lab.start()
+
 ```

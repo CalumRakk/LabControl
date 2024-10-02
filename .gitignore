@@ -15,3 +15,4 @@ good/
 *.egg-info
 script.py
 vcr_cassettes/
+*.xz
