@@ -5,7 +5,6 @@ from pathlib import Path
 import time
 
 from lxml import etree
-import vcr
 from requests import Response
 import requests
 
