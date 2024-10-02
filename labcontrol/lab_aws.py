@@ -12,7 +12,7 @@ import requests
 from labcontrol import log_decorator, Config
 from . import lab_aws_utils as utils
 from .lab_aws_utils import login_decorator
-from ..constants import *
+from .constants import *
 from labcontrol.singleton import SingletonMeta
 
 logger = logging.getLogger(__name__)
