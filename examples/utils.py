@@ -1,28 +1,10 @@
-import logging
 import time
-
-logging.basicConfig(
-    filename="log.txt",
-    filemode="a",
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    datefmt="%d-%m-%Y %I:%M:%S %p",
-    level=logging.DEBUG,
-    encoding="utf-8",
-)
+import logging
 
 logger = logging.getLogger(__name__)
-
-
-def log_decorator(func):
-    def wrapper(*args, **kwargs):
-        logger.info(
-            f"Llamando a {func.__name__} con los argumentos: {args}, kwargs: {kwargs}"
-        )
-        result = func(*args, **kwargs)
-        logger.info(f"{func.__name__} devuelve {result}")
-        return result
-
-    return wrapper
+get_remaining_session_time = (
+    lambda t: f"Tiempo restante de la sesión: {t} minutos (~{t/60} horas)"
+)
 
 
 def seconds_to_timeh(seconds):

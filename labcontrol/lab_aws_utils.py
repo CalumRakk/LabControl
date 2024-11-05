@@ -4,6 +4,7 @@ from enum import Enum
 from datetime import datetime
 from typing import Union
 from pathlib import Path
+import logging
 
 import requests
 
@@ -24,9 +25,11 @@ COOKIE_KEYS_FOR_REQUEST = [
     "currentassignment",
 ]
 
+logger = logging.getLogger(__name__)
+
 
 def login_decorator(func):
-    # Solo activa el login cuando al hacer la primera solicitud de obtiene un json con un campo de error con los casos especificados en este código
+    # Solo activa el login cuando al hacer la primera solicitud se obtiene un json con un campo de error con los casos especificados en este código
     def wrapper(*args, **kwargs):
         data = func(*args, **kwargs)
         if isinstance(data, dict):
@@ -34,6 +37,7 @@ def login_decorator(func):
                 data["error"] == LOGIN_AGAIN_MESSAGE
                 or data["error"] == "Files not found"
             ):
+                logger.info("Login again...")
                 browser = Browser()
                 browser.load_aws()
                 return func(*args, **kwargs)

@@ -6,7 +6,7 @@ from .base_browser_handler import BaseBrowserHandler
 
 
 class Browser(BaseBrowserHandler, metaclass=SingletonMeta):
-    def __init__(self, headless=False):
+    def __init__(self, headless=True):
         super().__init__(headless=headless)
 
     @classmethod

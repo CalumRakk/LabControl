@@ -61,10 +61,17 @@ class LabAWS(metaclass=SingletonMeta):
         path_data = Path(config["filepath"]["data_vocareum"])
         path_cookies = Path(config["filepath"]["cookies_vocareum"])
         if not path_cookies.exists() or not path_data.exists():
+            logger.error(
+                f"No se encontraron los archivos: {path_data} o {path_cookies}"
+            )
             return {"data": None, "error": "Files not found"}
 
         data_vocareum = json.loads(path_data.read_text())
         cookies_vocareum = utils.filter_cookies_for_request(path_cookies)
+
+        logger.debug(
+            f"Realizando solicitud a {VOCAREUM_VCPU_URL}, accion: {action}, data: {data_vocareum}"
+        )
 
         response = requests.get(
             url=VOCAREUM_VCPU_URL,
@@ -72,6 +79,9 @@ class LabAWS(metaclass=SingletonMeta):
             params=utils.generate_aws_params(action, data_vocareum),
             headers=HEADERS,
         )
+
+        logger.debug(f"Response status code: {response.status_code}")
+
         return response
 
     def _parsing_data(self, data: dict) -> dict:
