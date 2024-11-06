@@ -3,15 +3,39 @@
 #
 
 from labcontrol import LabAWS
+from labcontrol.constants import LabStatus
 import random
 import logging
 import utils
+import time
+
+
+# Esperar a que el laboratorio inicie
+def wait_for_lab_to_start(lab: LabAWS):
+    logger.info("Esperando al laboratorio a iniciar")
+    while True:
+        if lab.status != LabStatus.ready:
+            time.sleep(1)
+        break
+
+
+def get_data_from_lab(lab: LabAWS):
+    data = lab.getaws()
+
+    if data["data"]["status"] != LabStatus.ready:
+        lab.start()
+        wait_for_lab_to_start(lab)
+        data = lab.getaws()
+
+    return data
+
 
 logger = logging.getLogger(__name__)
 
 logger.info("El programa se ha iniciado")
 lab = LabAWS()
-data = lab.getaws()
+data = get_data_from_lab(lab)
+
 
 min_remaining = int(
     data["data"]["sessions"]["remaining_time"].split("(")[-1].split()[0]
@@ -25,6 +49,7 @@ if min_remaining > 120:
     utils.sleep_program(difference_in_seg)
 
 data = lab.start()
+data = get_data_from_lab(lab)
 min_remaining = int(
     data["data"]["sessions"]["remaining_time"].split("(")[-1].split()[0]
 )
@@ -38,6 +63,7 @@ while True:
     utils.sleep_program(random_wait_minutes * 60)
 
     data = lab.start()
+    data = get_data_from_lab(lab)
     min_remaining = int(
         data["data"]["sessions"]["remaining_time"].split("(")[-1].split()[0]
     )

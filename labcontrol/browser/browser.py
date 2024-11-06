@@ -1,8 +1,12 @@
 from playwright.sync_api import Page
+import logging
 
 from ..constants import ActionsInstance, StatusInstance, StatusLab
 from labcontrol.singleton import SingletonMeta
 from .base_browser_handler import BaseBrowserHandler
+
+
+logger = logging.getLogger(__name__)
 
 
 class Browser(BaseBrowserHandler, metaclass=SingletonMeta):
@@ -18,6 +22,7 @@ class Browser(BaseBrowserHandler, metaclass=SingletonMeta):
             instance.playwright.stop()
 
     def load_aws(self):
+        logger.info("Cargando AWS Academy")
         self._load_awsacademy()
 
     def get_status_instance(self, page: Page, instance_id) -> StatusInstance:

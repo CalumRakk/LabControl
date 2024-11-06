@@ -4,6 +4,7 @@ from pathlib import Path
 import time
 import re
 from urllib.parse import parse_qs
+import logging
 
 from playwright.sync_api import (
     sync_playwright,
@@ -17,6 +18,7 @@ from ..constants import *
 from labcontrol.utils import sleep_program
 
 user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36"
+logger = logging.getLogger(__name__)
 
 
 class Properties:
@@ -34,7 +36,8 @@ class Properties:
     @property
     def browser(self):
         if not hasattr(self, "_browser"):
-            self._browser = self.playwright.chromium.launch(headless=False)
+            logger.debug(f"Iniciando navegador: headless={self.headless}")
+            self._browser = self.playwright.chromium.launch(headless=self.headless)
         return self._browser
 
     @property
@@ -92,8 +95,10 @@ class Methods(Properties):
         #     page.goto(AWSACADEMY_URL)
         page = self.go_url(AWSACADEMY_URL)
         if is_login(page):
+            logger.info("Iniciando session")
             self._login(*config.get_credentials())
 
+        logger.debug("Localizando boton iniciar laboratorio")
         # Clickea en el boton de AWS Academy Learner Lab ['USER']
         locate_instance = page.locator(f"xpath=//a[@class='ic-DashboardCard__link']")
         locate_instance.wait_for()
@@ -117,6 +122,7 @@ class Methods(Properties):
         #     config.save()
 
         locate_instance.click()
+        logger.debug("Clickea en el boton de iniciar el laboratorio de AWS Academy")
 
         self._wait_for_lab_load(page)
 

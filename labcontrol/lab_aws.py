@@ -69,9 +69,7 @@ class LabAWS(metaclass=SingletonMeta):
         data_vocareum = json.loads(path_data.read_text())
         cookies_vocareum = utils.filter_cookies_for_request(path_cookies)
 
-        logger.debug(
-            f"Realizando solicitud a {VOCAREUM_VCPU_URL}, accion: {action}, data: {data_vocareum}"
-        )
+        logger.debug(f"Realizando solicitud accion: {action}")
 
         response = requests.get(
             url=VOCAREUM_VCPU_URL,
@@ -80,7 +78,7 @@ class LabAWS(metaclass=SingletonMeta):
             headers=HEADERS,
         )
 
-        logger.debug(f"Response status code: {response.status_code}")
+        logger.debug(f"Respuesta de la solicitud: {response.text[:100]}")
 
         return response
 
