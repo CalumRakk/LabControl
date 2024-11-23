@@ -3,6 +3,7 @@
 #
 
 from labcontrol import LabAWS
+from labcontrol.lab_aws_utils import download_aws_sso
 from labcontrol.constants import LabStatus
 import logging
 import time
@@ -39,6 +40,7 @@ class LabController:
 
     def get_min_remaining_time(self):
         data = self.lab.getaws()
+        download_aws_sso(data["data"]["aws_sso"])
         min_remaining = self.get_remaining_session_time(data)
         logger.debug(f"Tiempo restante de la sesión obtenido: {min_remaining}")
         return min_remaining

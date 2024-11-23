@@ -100,6 +100,7 @@ class Methods(Properties):
 
         logger.debug("Localizando boton iniciar laboratorio")
         # Clickea en el boton de AWS Academy Learner Lab ['USER']
+        # https://img001.prntscr.com/file/img001/DKBvEguUQGOiKVgZtsW1bA.png
         locate_instance = page.locator(f"xpath=//a[@class='ic-DashboardCard__link']")
         locate_instance.wait_for()
         locate_instance.click()

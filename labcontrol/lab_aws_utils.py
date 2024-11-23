@@ -2,16 +2,17 @@ import json
 import re
 from enum import Enum
 from datetime import datetime
-from typing import Union
+from typing import Union, NewType
 from pathlib import Path
 import logging
+import base64
 
 import requests
 
 from labcontrol import Config
 from .constants import LabStatus, LAB_NOT_STARTED, LOGIN_AGAIN_MESSAGE, AWSAction
 from .browser import Browser
-
+from .constants import *
 
 COOKIE_KEYS_FOR_REQUEST = [
     "logintoken",
@@ -26,6 +27,9 @@ COOKIE_KEYS_FOR_REQUEST = [
 ]
 
 logger = logging.getLogger(__name__)
+
+
+Base64Str = NewType("Base64Str", str)
 
 
 def login_decorator(func):
@@ -185,9 +189,6 @@ def get_aws_credentials(root):
     return values
 
 
-####
-
-
 def generate_aws_params(action: AWSAction, data_vocareum: dict):
     return {
         "a": action.value,
@@ -197,3 +198,37 @@ def generate_aws_params(action: AWSAction, data_vocareum: dict):
         "v": "0",
         "vockey": data_vocareum["vockey"],
     }
+
+
+def get_aws_sso(response):
+    config = Config()
+    path_data = Path(config["filepath"]["data_vocareum"])
+    path_cookies = Path(config["filepath"]["cookies_vocareum"])
+
+    cookies_vocareum = filter_cookies_for_request(path_cookies)
+    data_vocareum = json.loads(path_data.read_text())
+    data_ssodownload = re.search(
+        "ssodownload\('([A-Za-z0-9+/]+==)'\)", response.text
+    ).group(1)
+
+    data = {
+        "a": "ssodownload",
+        "data": data_ssodownload,
+        "step": data_vocareum["stepid"],
+        "vockey": data_vocareum["vockey"],
+    }
+
+    response = requests.post(
+        "https://labs.vocareum.com/util/vcput.php",
+        cookies=cookies_vocareum,
+        headers=HEADERS,
+        data=data,
+    )
+    return response.text
+
+
+def download_aws_sso(data: Base64Str):
+    binary_data = base64.b64decode(data)
+
+    with open("ssourl.txt", "wb") as file:
+        file.write(binary_data)

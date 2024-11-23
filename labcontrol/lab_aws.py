@@ -145,6 +145,9 @@ class LabAWS(metaclass=SingletonMeta):
 
         sessiones = utils.extract_session_times(root, status)
         expiretime = utils.get_expire_time(root)
+        # AWS SSO (Single Sign-On)
+        aws_sso = utils.get_aws_sso(response)
+
         aws_credentials = None
         if status == LabStatus.ready:
             aws_credentials = utils.get_aws_credentials(root)
@@ -154,6 +157,7 @@ class LabAWS(metaclass=SingletonMeta):
                 "sessions": sessiones,
                 "expiretime": expiretime,
                 "aws_credentials": aws_credentials,
+                "aws_sso": aws_sso,
             },
             "error": None,
         }
