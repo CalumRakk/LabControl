@@ -5,7 +5,9 @@ from typing import List, Literal, Optional, Union
 
 import requests
 
+from labcontrol.api.browser.actions_lab_aws import set_cookies_on_driver
 from labcontrol.api.browser.driver import DriverManager
+from labcontrol.api.parser import SeleniumCookie
 
 
 logger = logging.getLogger(__name__)
@@ -37,7 +39,7 @@ class LabAWSBrowserAPI:
         logger.info("Inicializando TiktokBrowserAPI con Selenium.")
         self.browser = DriverManager(chrome_profile, headless)
 
-    def set_cookies(self, cookies: List[CookieAttribute]):
+    def set_cookies(self, cookies: List[SeleniumCookie]):
         logger.info("Estableciendo cookies en el navegador.")
         set_cookies_on_driver(self.browser.driver, cookies)
 

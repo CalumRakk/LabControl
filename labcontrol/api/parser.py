@@ -1,5 +1,8 @@
+from http.cookiejar import Cookie
 from urllib.parse import unquote
 from typing import List, Dict, Union
+
+from labcontrol.api.browser.driver import Path
 
 SeleniumCookie = Dict[str, Union[str, bool]]
 
@@ -50,3 +53,25 @@ def cookies_to_selenium(raw: str, domain: str) -> List[Dict]:
 
         selenium_cookies.append(cookie_dict)
     return selenium_cookies
+
+def load_netscape_cookies(filepath: Union[str, Path]) -> List[SeleniumCookie]:
+    filepath = Path(filepath) if isinstance(filepath, str) else filepath
+    cookies = []
+    with open(filepath, "r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue  # ignorar comentarios y líneas vacías
+
+            domain, flag, path, secure, expiration, name, value = line.split("\t")
+
+            cookie = {
+                "domain": domain,
+                "path": path,
+                "secure": secure.lower() == "true",
+                "expiry": int(expiration),
+                "name": name,
+                "value": value,
+            }
+            cookies.append(cookie)
+    return cookies
