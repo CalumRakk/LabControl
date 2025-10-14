@@ -1,33 +1,52 @@
-def parse_set_cookies(set_cookie_headers):
-    """Parsea Set-Cookie en un diccionario de cookies."""
-    parts = [p.strip() for p in set_cookie_headers.split(",")]
+from urllib.parse import unquote
+from typing import List, Dict, Union
 
-    if not parts:
-        return {}
+SeleniumCookie = Dict[str, Union[str, bool]]
 
+def cookies_to_requests(raw: str) -> Dict[str, str]:
+    """
+    Convierte un header Cookie o Set-Cookie en un dict simple para requests.
+    """
     cookies = {}
-    current_cookie = None
-    
+    # Dividir por coma solo cuando empieza una nueva cookie (key=...)
+    parts = [p.strip() for p in raw.split(",")]
     for part in parts:
-        segments = [s.strip() for s in part.split(";")]   
-
-        # Si el primer segmento contiene '=', es una nueva cookie
+        segments = [s.strip() for s in part.split(";")]
         if "=" in segments[0]:
             name, value = segments[0].split("=", 1)
-            current_cookie = name
-            cookies[current_cookie] = {
-                "value": value,
-                "attributes": {}
-            }
-            attr_segments = segments[1:]
-        else:
-            # Es un atributo de la cookie anterior
-            attr_segments = segments
+            cookies[name] = unquote(value)  # decodifica %xx
+    return cookies
 
-        for attr in attr_segments:
+
+def cookies_to_selenium(raw: str, domain: str) -> List[Dict]:
+    """
+    Convierte un header Cookie o Set-Cookie en el formato esperado por Selenium.
+    """
+    selenium_cookies = []
+    parts = [p.strip() for p in raw.split(",")]
+    for part in parts:
+        segments = [s.strip() for s in part.split(";")]
+        if "=" not in segments[0]:
+            continue
+        name, value = segments[0].split("=", 1)
+        cookie_dict : SeleniumCookie = {
+            "name": name,
+            "value": unquote(value),
+            "domain": domain,
+            "path": "/"
+        }
+        # Procesar atributos como path, secure, httponly
+        for attr in segments[1:]:
             if "=" in attr:
                 k, v = attr.split("=", 1)
-                cookies[current_cookie]["attributes"][k.lower()] = v
+                if k.lower() == "path":
+                    cookie_dict["path"] = v
             else:
-                cookies[current_cookie]["attributes"][attr.lower()] = True
-    return cookies
+                # Flags sin valor: secure, httponly, etc.
+                if attr.lower() == "secure":
+                    cookie_dict["secure"] = True
+                if attr.lower() == "httponly":
+                    cookie_dict["httpOnly"] = True
+
+        selenium_cookies.append(cookie_dict)
+    return selenium_cookies

@@ -1,6 +1,6 @@
 import requests
 import logging
-from labcontrol.api.parser import parse_set_cookies
+from labcontrol.api.parser import cookies_to_requests, cookies_to_selenium
 from urllib.parse import unquote
 
 logger= logging.getLogger(__name__)
@@ -18,7 +18,7 @@ headers = {
     "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36",
     "x-requested-with": "XMLHttpRequest",
 }
-class LabAWS():
+class LabAWSHttpApi():
     def __init__(self, unique_id: str, password: str):
         self.unique_id = unique_id
         self.password = password
@@ -27,9 +27,9 @@ class LabAWS():
         """Obtiene las cookies iniciales necesarias para el login. Las cookies devueltas estan compactas: {cookie_name: cookie_value}"""
         url= "https://awsacademy.instructure.com/login/canvas"
         response= requests.get(url, headers=headers)
-        cookies = parse_set_cookies(response.headers.get("Set-Cookie", ""))
-        return {k: v["value"] for k, v in cookies.items()}
-    def _get_login_cookies(self, initial_cookies: dict[str,str]) -> dict[str,str]:
+        return cookies_to_requests(response.headers.get("Set-Cookie", ""))
+    
+    def _get_login_cookies(self, initial_cookies: dict[str,str]):
         data = {
             'utf8': '✓',
             'authenticity_token':  unquote( initial_cookies["_csrf_token"]),
@@ -47,13 +47,9 @@ class LabAWS():
         response_login_canvas= responses[0]
         response_sso_vancaslms= responses[1]
         response_login_succes= responses[2]
-
-        # Extrae cookies de la respuesta del login
-        login_cookies= parse_set_cookies(response_login_canvas.headers.get("Set-Cookie"))
-        login_cookies_compact= {k: v["value"] for k, v in login_cookies.items()}
-        return login_cookies_compact
+        return cookies_to_requests(response_login_canvas.headers.get("Set-Cookie", ""))
     def _validate_and_get_final_cookies(self, login_cookies: dict[str,str]):
-        """Devuelve las cookies finales si el login fue exitoso. Las cookies devuelva son cookies header completas."""
+        """Devuelve las cookies finales si el login fue exitoso. Las cookies devuelvas tienen un formato para selenium."""
         params = {
             'login_success': '1',
         }        
@@ -61,7 +57,7 @@ class LabAWS():
 
         if response.status_code == 200:
             logger.info("Login successful")
-            cookies_validated= parse_set_cookies(response.headers.get("Set-Cookie"))
+            cookies_validated= cookies_to_selenium(response.headers.get("Set-Cookie","",), domain=".awsacademy.instructure.com")
             return cookies_validated
 
         logger.error("Login failed")

@@ -16,3 +16,4 @@ good/
 script.py
 vcr_cassettes/
 *.xz
+.venv/
