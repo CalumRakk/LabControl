@@ -1,8 +1,6 @@
-from http.cookiejar import Cookie
 from urllib.parse import unquote
 from typing import List, Dict, Union
-
-from labcontrol.api.browser.driver import Path
+from pathlib import Path
 
 SeleniumCookie = Dict[str, Union[str, bool]]
 
