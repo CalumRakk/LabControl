@@ -5,7 +5,7 @@ from typing import List, Literal, Optional, Union
 
 import requests
 
-from labcontrol.api.browser.actions_lab_aws import set_cookies_on_driver
+from labcontrol.api.browser.actions_lab_aws import set_cookies_on_driver, wait_for_lab_load
 from labcontrol.api.browser.driver import DriverManager
 from labcontrol.api.parser import SeleniumCookie
 from labcontrol.api.browser.actions_lab_aws import get_course_id, get_lab_item_id, get_lab_item_id, set_cookies_on_driver
@@ -57,3 +57,10 @@ class LabAWSBrowserAPI:
         url_lab= f"https://awsacademy.instructure.com/courses/{course_id}/modules/items/{lab_item_id}"
 
         driver.get(url_lab)
+
+        wait_for_lab_load(driver)
+
+        logger.info("¡Laboratorio cargado exitosamente!")
+        return True
+
+        

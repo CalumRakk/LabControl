@@ -19,14 +19,17 @@ def set_cookies_on_driver(
 
     for cookie in cookies:
         # Expires/Max-Age en set-cookies tiene el valor 'Session', lo que parece indicar una session sin expiracion o hasta que se cierre el navegador. Selenium no acepta ese valor, por lo que se elimina y se logra un funcionamiento similar al navegador.
-        cookie.pop("expiry") 
+        if cookie.get("expiry",0)==0:
+            cookie.pop("expiry")
+
         driver.add_cookie(cookie)
 
     driver.get("https://awsacademy.instructure.com")
 
 def get_course_id(driver):
     try:
-        clickable_course= WebDriverWait(driver, 10).until(EC.element_to_be_clickable(("xpath",f".//a[@class='ic-DashboardCard__link']")))
+        wait= WebDriverWait(driver, 10)
+        clickable_course= wait.until(EC.element_to_be_clickable(("xpath",f".//a[@class='ic-DashboardCard__link']")))
         href= cast(str, clickable_course.get_attribute("href"))
         return href.split("/")[-1]        
     except TimeoutException:
@@ -40,3 +43,21 @@ def get_lab_item_id(driver):
     except TimeoutException:
         logger.error("TimeoutException: No se pudo encontrar el elemento clickeable.")
         return False
+    
+
+def wait_for_lab_load(driver: Chrome, timeout: int = 30) -> bool:
+    try:
+        wait = WebDriverWait(driver, 10)
+        iframe = wait.until(EC.frame_to_be_available_and_switch_to_it(("xpath", f".//iframe[@src='about:blank' and @class='tool_launch']")))  
+
+        elemento_dentro = wait.until(EC.element_to_be_clickable(("id", "launchclabsbtn")))
+        
+        print("¡Contenido del iframe cargado! Elemento encontrado:", elemento_dentro.get_attribute("onclick"))
+
+        return True
+        
+    except TimeoutException:
+        print("El iframe no cargó en 10 segundos. Verifica la conexión o el ID.")
+        
+    finally:
+        driver.switch_to.default_content()
