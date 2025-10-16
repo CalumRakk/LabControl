@@ -5,9 +5,9 @@ from typing import List, Literal, Optional, Union
 
 import requests
 
-from labcontrol.api.browser.actions_lab_aws import set_cookies_on_driver, wait_for_lab_load
+from labcontrol.api.browser.actions_lab_aws import get_lab_aws_details, set_cookies_on_driver, wait_for_lab_load
 from labcontrol.api.browser.driver import DriverManager
-from labcontrol.api.parser import SeleniumCookie
+from labcontrol.api.parser import SeleniumCookie, parse_lab_aws_details_content
 from labcontrol.api.browser.actions_lab_aws import get_course_id, get_lab_item_id, get_lab_item_id, set_cookies_on_driver
 
 logger = logging.getLogger(__name__)
@@ -43,7 +43,14 @@ class LabAWSBrowserAPI:
         logger.info("Estableciendo cookies en el navegador.")
         set_cookies_on_driver(self.browser.driver, cookies)
 
-    def go_to_lab_home(self):
+    @property
+    def is_in_lab(self) -> bool:
+        current_url= self.browser.driver.current_url
+        return "courses" in current_url and "items" in current_url
+    def _go_to_lab_home(self):
+        if self.is_in_lab:
+            return True
+
         driver= self.browser.driver
 
         course_id= get_course_id(driver)
@@ -62,5 +69,7 @@ class LabAWSBrowserAPI:
 
         logger.info("¡Laboratorio cargado exitosamente!")
         return True
-
-        
+    
+    def get_lab_details(self):
+        content_lan= get_lab_aws_details(self.browser.driver)
+        return parse_lab_aws_details_content(content_lan)

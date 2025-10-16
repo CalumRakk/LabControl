@@ -1,6 +1,9 @@
+from datetime import datetime
 from urllib.parse import unquote
 from typing import List, Dict, Union
 from pathlib import Path
+
+from labcontrol.api.browser.utils import parse_accumulated_time
 
 SeleniumCookie = Dict[str, Union[str, bool]]
 
@@ -73,3 +76,31 @@ def load_netscape_cookies(filepath: Union[str, Path]) -> List[SeleniumCookie]:
             }
             cookies.append(cookie)
     return cookies
+
+def parse_lab_aws_details_content(content_lab:list[str])->dict:
+    data={}
+    if len(content_lab)==3:
+        # el laboratorio no ha iniciado.
+        session_time_string = content_lab[0]
+        session_status_time = content_lab[1]
+        accumulated_lab_time = content_lab[2]
+    
+        # --- parse session_time_string ---
+        session_time_value= session_time_string.split(":",1)[-1].strip()         
+        if session_time_value.startswith("-"):
+            data["session_started_at"] = None
+        else:              
+            data["session_started_at"] = datetime.strptime(session_time_value, "%Y-%m-%dT%H:%M:%S%z")
+    
+        # --- parse session_status_time ---
+        status= session_status_time.split()[1].strip()
+        status_time= session_status_time.split()[-1].strip()
+       
+        data["session_status"] = status
+        data["session_status_time"] =  datetime.strptime(status_time, "%Y-%m-%dT%H:%M:%S%z")
+
+        # --- parse accumulated_lab_time ---
+
+        data["accumulated_lab_time"] = parse_accumulated_time(accumulated_lab_time)
+        return data
+    raise ValueError
