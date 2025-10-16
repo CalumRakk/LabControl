@@ -5,7 +5,7 @@ from typing import List, Literal, Optional, Union
 
 import requests
 
-from labcontrol.api.browser.actions_lab_aws import get_lab_aws_details, set_cookies_on_driver, wait_for_lab_load
+from labcontrol.api.browser.actions_lab_aws import get_lab_aws_details, set_cookies_on_driver, switch_to_iframe, wait_for_lab_load
 from labcontrol.api.browser.driver import DriverManager
 from labcontrol.api.parser import SeleniumCookie, parse_lab_aws_details_content
 from labcontrol.api.browser.actions_lab_aws import get_course_id, get_lab_item_id, get_lab_item_id, set_cookies_on_driver
@@ -47,10 +47,7 @@ class LabAWSBrowserAPI:
     def is_in_lab(self) -> bool:
         current_url= self.browser.driver.current_url
         return "courses" in current_url and "items" in current_url
-    def _go_to_lab_home(self):
-        if self.is_in_lab:
-            return True
-
+    def _get_url_lab(self):
         driver= self.browser.driver
 
         course_id= get_course_id(driver)
@@ -61,15 +58,21 @@ class LabAWSBrowserAPI:
 
         lab_item_id= get_lab_item_id(driver)
 
-        url_lab= f"https://awsacademy.instructure.com/courses/{course_id}/modules/items/{lab_item_id}"
-
-        driver.get(url_lab)
-
-        wait_for_lab_load(driver)
-
+        return f"https://awsacademy.instructure.com/courses/{course_id}/modules/items/{lab_item_id}"
+    def _go_to_lab_home(self):
+        if self.is_in_lab:
+            return True
+        
+        url_lab= self._get_url_lab()
+        self.browser.driver.get(url_lab)
+        wait_for_lab_load(self.browser.driver)
         logger.info("¡Laboratorio cargado exitosamente!")
         return True
     
     def get_lab_details(self):
         content_lan= get_lab_aws_details(self.browser.driver)
         return parse_lab_aws_details_content(content_lan)
+
+    def get_cookies_vocareum(self)->List[SeleniumCookie]:
+        with switch_to_iframe(self.browser.driver, 10):
+            return self.browser.driver.get_cookies()

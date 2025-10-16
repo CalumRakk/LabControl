@@ -9,8 +9,9 @@ SeleniumCookie = Dict[str, Union[str, bool]]
 
 def cookies_to_requests(raw: str) -> Dict[str, str]:
     """
-    Convierte un header Cookie o Set-Cookie en un dict simple para requests.
+    Convierte un header Cookie o Set-Cookie en un dict simple para requests. Esto implica unquote de los valores.
     """
+    # TODO: agregar set_cookie en el nombre
     cookies = {}
     # Dividir por coma solo cuando empieza una nueva cookie (key=...)
     parts = [p.strip() for p in raw.split(",")]
@@ -26,6 +27,7 @@ def cookies_to_selenium(raw: str, domain: str) -> List[Dict]:
     """
     Convierte un header Cookie o Set-Cookie en el formato esperado por Selenium.
     """
+    # TODO: agregar set_cookie en el nombre o un mejor indicador
     selenium_cookies = []
     parts = [p.strip() for p in raw.split(",")]
     for part in parts:
