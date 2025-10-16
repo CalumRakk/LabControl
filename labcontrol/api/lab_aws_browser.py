@@ -34,12 +34,26 @@ class LabAWSBrowserAPI:
     """Usa Selenium para scroll y extracción con cursor."""
 
     def __init__(
-        self, chrome_profile: Optional[Union[str, Path]] = None, headless=False
+        self, cookies: Optional[List[SeleniumCookie]]=None, chrome_profile: Optional[Union[str, Path]] = None, headless=False
     ):
-        logger.info("Inicializando TiktokBrowserAPI con Selenium.")
+        """Inicializa la API del navegador de laboratorios AWS Academy.
+        
+        Args:
+            cookies (Optional[List[SeleniumCookie]], optional): Cookies para iniciar sesión. Defaults to None.
+            chrome_profile (Optional[Union[str, Path]], optional): Ruta al perfil de Chrome. Defaults to None.
+            headless (bool, optional): Ejecutar en modo headless. Defaults to False.
+        
+        Nota: Si se proporcionan cookies, se establecerán en el navegador y se navegará a la página principal del laboratorio.
+        
+        """
+        logger.info("Inicializando LabAWSBrowserAPI con Selenium.")
         self.browser = DriverManager(chrome_profile, headless)
 
-    def set_cookies(self, cookies: List[SeleniumCookie]):
+        if cookies:
+            self._set_cookies(cookies)
+            self._go_to_lab_home()
+
+    def _set_cookies(self, cookies: List[SeleniumCookie]):
         logger.info("Estableciendo cookies en el navegador.")
         set_cookies_on_driver(self.browser.driver, cookies)
 

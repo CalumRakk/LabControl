@@ -1,8 +1,9 @@
+from ctypes import cast
 import requests
 import logging
-from labcontrol.api.parser import cookies_to_requests, cookies_to_selenium
+from labcontrol.api.parser import SeleniumCookie, cookies_to_requests, cookies_to_selenium
 from urllib.parse import unquote
-
+from lxml import html
 logger= logging.getLogger(__name__)
 
 headers = {
@@ -19,9 +20,6 @@ headers = {
     "x-requested-with": "XMLHttpRequest",
 }
 class LabAWSHttpApi():
-    def __init__(self, unique_id: str, password: str):
-        self.unique_id = unique_id
-        self.password = password
 
     def _get_initial_cookies(self)-> dict[str,str]:
         """Obtiene las cookies iniciales necesarias para el login. Las cookies devueltas estan compactas: {cookie_name: cookie_value}"""
@@ -62,11 +60,23 @@ class LabAWSHttpApi():
 
         logger.error("Login failed")
         raise Exception("Login failed")
-    def login(self):        
-   
+
+    def login(self, unique_id: str, password: str):
+        self.unique_id = unique_id
+        self.password = password
+
         initial_cookies= self._get_initial_cookies()
         login_cookies= self._get_login_cookies(initial_cookies)        
         cookies_validated= self._validate_and_get_final_cookies(login_cookies)
         # cookies_validated_compact= {k: v["value"] for k, v in cookies_validated.items()}
         return cookies_validated
-    
+    def is_valid_cookie(self, cookies: list[SeleniumCookie])-> bool:
+        url= "https://awsacademy.instructure.com/profile/settings"
+        
+        cookie_dict : dict = {i["name"]: i["value"] for i in cookies}
+        response= requests.get(url, headers=headers, cookies=cookie_dict)
+
+        root= html.fromstring(response.text)
+        
+        full_name_element=  root.find(".//span[@class='full_name display_data']")
+        return full_name_element is not None

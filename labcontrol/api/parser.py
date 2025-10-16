@@ -23,7 +23,7 @@ def cookies_to_requests(raw: str) -> Dict[str, str]:
     return cookies
 
 
-def cookies_to_selenium(raw: str, domain: str) -> List[Dict]:
+def cookies_to_selenium(raw: str, domain: str) -> List[SeleniumCookie]:
     """
     Convierte un header Cookie o Set-Cookie en el formato esperado por Selenium.
     """
