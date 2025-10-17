@@ -3,8 +3,8 @@ import re
 from typing import List, cast
 from selenium.webdriver import Chrome
 import logging
-from labcontrol.api.browser.utils import clear_content
-from labcontrol.api.parser import SeleniumCookie
+from labcontrol.browser.utils import clear_content
+from labcontrol.parser import SeleniumCookie
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from selenium.common.exceptions import TimeoutException

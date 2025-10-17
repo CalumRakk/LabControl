@@ -1,7 +1,7 @@
 from ctypes import cast
 import requests
 import logging
-from labcontrol.api.parser import SeleniumCookie, cookies_to_requests, cookies_to_selenium
+from labcontrol.parser import SeleniumCookie, cookies_to_requests, cookies_to_selenium
 from urllib.parse import unquote
 from lxml import html
 logger= logging.getLogger(__name__)

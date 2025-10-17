@@ -3,7 +3,7 @@ from urllib.parse import unquote
 from typing import List, Dict, Union
 from pathlib import Path
 
-from labcontrol.api.browser.utils import parse_accumulated_time
+from labcontrol.browser.utils import parse_accumulated_time
 
 SeleniumCookie = Dict[str, Union[str, bool]]
 

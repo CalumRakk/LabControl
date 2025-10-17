@@ -5,10 +5,10 @@ from typing import List, Literal, Optional, Union
 
 import requests
 
-from labcontrol.api.browser.actions_lab_aws import get_lab_aws_details, set_cookies_on_driver, switch_to_iframe, wait_for_lab_load
-from labcontrol.api.browser.driver import DriverManager
-from labcontrol.api.parser import SeleniumCookie, parse_lab_aws_details_content
-from labcontrol.api.browser.actions_lab_aws import get_course_id, get_lab_item_id, get_lab_item_id, set_cookies_on_driver
+from labcontrol.browser.actions_lab_aws import get_lab_aws_details, set_cookies_on_driver, switch_to_iframe, wait_for_lab_load
+from labcontrol.browser.driver import DriverManager
+from labcontrol.parser import SeleniumCookie, parse_lab_aws_details_content
+from labcontrol.browser.actions_lab_aws import get_course_id, get_lab_item_id, get_lab_item_id, set_cookies_on_driver
 
 logger = logging.getLogger(__name__)
 
