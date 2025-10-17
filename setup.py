@@ -1,0 +1,11 @@
+from setuptools import find_packages, setup
+
+setup(
+    name="labcontrol",
+    version="0.1",
+    description="",
+    author="Leo",
+    author_email="leocasti@gmail.com",
+    packages=find_packages(),
+    install_requires=["lxml", "requests", "pydantic", "selenium","webdriver-manager"],
+)

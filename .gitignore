@@ -3,4 +3,5 @@ docs/
 .env/
 .venv/
 .vscode/
+build/
 *.egg-info
