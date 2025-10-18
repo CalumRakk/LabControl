@@ -1,3 +1,5 @@
+import time
+
 from labcontrol.config import get_settings
 from labcontrol.lab_aws_browser import LabAWSBrowserAPI
 from labcontrol.lab_aws_http import LabAWSHttpApi
@@ -6,6 +8,7 @@ from labcontrol.parser import (
     load_vocareum_params,
     save_netscape_cookies,
 )
+from labcontrol.schema import LabStatus
 from labcontrol.vocareum_http import VocareumApi
 
 config = get_settings(".env/labcontrol.env")
@@ -42,5 +45,16 @@ else:
     params = load_vocareum_params(config.vocareum_cookies_path)
 
 vocareum_api = VocareumApi(params)
-response = vocareum_api.get_aws_status()
-print(response)
+response = vocareum_api.start_aws()
+
+print(response.model_dump(), "\n")
+
+while True:
+    result = vocareum_api.get_aws_status()
+    if result.success is True:
+        print(result.status)
+        if result.status == LabStatus.ready:
+            break
+    time.sleep(1)
+
+print("AWS listo")

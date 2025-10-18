@@ -9,8 +9,8 @@ from labcontrol.schema import (
     AWSContentSuccess,
     AWSStatus,
     AWSStatusFailure,
-    AWSStatusResponse,
     AWSStatusSuccess,
+    LabStatus,
     VocareumParams,
 )
 
@@ -44,7 +44,7 @@ class VocareumApi:
         )
         return response
 
-    def get_aws_status(self) -> AWSStatusResponse:
+    def get_aws_status(self) -> AWSStatus:
 
         response = self._make_request(AWSAction.getawsstatus)
 
@@ -53,19 +53,33 @@ class VocareumApi:
         if "lab status" in response.text.lower():
             text_with_br = response.text.split(":")[1].strip()
             status = text_with_br.replace("<br>", "")
-            return AWSStatusSuccess(success=True, status=AWSStatus(status))
+            return AWSStatusSuccess(success=True, status=LabStatus(status))
 
         return AWSStatusFailure(success=False, error=response.text)
 
-    def get_aws(self) -> Optional[AWSContent | AWSStatusResponse]:
+    def get_aws(self) -> Optional[AWSContent | AWSStatus]:
         status = self.get_aws_status()
         if status.success is False:
             return status
-        elif AWSStatus.in_creation is status.status:
+        elif LabStatus.in_creation is status.status:
             return status
 
         response = self._make_request(AWSAction.getaws)
         if "<strong>Cloud Labs</strong>" in response.text:
+            return AWSContentSuccess(success=True, content=response.text)
+
+        return AWSStatusFailure(success=False, error=response.text)
+
+    def start_aws(self) -> AWSContent | AWSStatus:
+        response = self._make_request(AWSAction.startaws)
+        if "success" in response.text:
+            return AWSContentSuccess(success=True, content=response.text)
+
+        return AWSStatusFailure(success=False, error=response.text)
+
+    def end_aws(self) -> AWSContent | AWSStatus:
+        response = self._make_request(AWSAction.endaws)
+        if "success" in response.text:
             return AWSContentSuccess(success=True, content=response.text)
 
         return AWSStatusFailure(success=False, error=response.text)
