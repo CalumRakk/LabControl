@@ -1,8 +1,12 @@
+from typing import Optional
+
 import requests
 from requests import Response
 
 from labcontrol.schema import (
     AWSAction,
+    AWSContent,
+    AWSContentSuccess,
     AWSStatus,
     AWSStatusFailure,
     AWSStatusSuccess,
@@ -47,5 +51,18 @@ class VocareumApi:
             return AWSStatusFailure(success=False, error=response.text)
         if "lab status" in response.text.lower():
             return AWSStatusSuccess(success=True, status=response.text)
+
+        return AWSStatusFailure(success=False, error=response.text)
+
+    def get_aws(self) -> Optional[AWSContent | AWSStatus]:
+        status = self.get_aws_status()
+        if status.success is False:
+            return status
+        elif "creation" in status.status.lower():
+            return status
+
+        response = self._make_request(AWSAction.getaws)
+        if "<strong>Cloud Labs</strong>" in response.text:
+            return AWSContentSuccess(success=True, content=response.text)
 
         return AWSStatusFailure(success=False, error=response.text)

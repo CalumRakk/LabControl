@@ -62,5 +62,16 @@ class LoginFailure(BaseModel):
     error: str
 
 
+class AWSContentSuccess(BaseModel):
+    success: Literal[True]
+    content: str
+
+
+class AWSContentFailure(BaseModel):
+    success: Literal[False]
+    error: str
+
+
+AWSContent = AWSContentSuccess | AWSContentFailure
 AWSStatus = AWSStatusSuccess | AWSStatusFailure
 Login = LoginSuccess | LoginFailure
