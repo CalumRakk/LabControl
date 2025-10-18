@@ -34,6 +34,12 @@ class AWSAction(Enum):
     endaws = "endaws"
 
 
+class AWSStatus(Enum):
+    stopped = "stopped"
+    in_creation = "in creation"
+    ready = "ready"
+
+
 class VocareumParams(BaseModel):
     stepid: int
     vockey: str
@@ -44,7 +50,7 @@ class VocareumParams(BaseModel):
 
 class AWSStatusSuccess(BaseModel):
     success: Literal[True]
-    status: str
+    status: AWSStatus
 
 
 class AWSStatusFailure(BaseModel):
@@ -73,5 +79,5 @@ class AWSContentFailure(BaseModel):
 
 
 AWSContent = AWSContentSuccess | AWSContentFailure
-AWSStatus = AWSStatusSuccess | AWSStatusFailure
+AWSStatusResponse = AWSStatusSuccess | AWSStatusFailure
 Login = LoginSuccess | LoginFailure

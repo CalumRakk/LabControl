@@ -9,6 +9,7 @@ from labcontrol.schema import (
     AWSContentSuccess,
     AWSStatus,
     AWSStatusFailure,
+    AWSStatusResponse,
     AWSStatusSuccess,
     VocareumParams,
 )
@@ -43,22 +44,24 @@ class VocareumApi:
         )
         return response
 
-    def get_aws_status(self) -> AWSStatus:
+    def get_aws_status(self) -> AWSStatusResponse:
 
         response = self._make_request(AWSAction.getawsstatus)
 
         if "failed" in response.text.lower():
             return AWSStatusFailure(success=False, error=response.text)
         if "lab status" in response.text.lower():
-            return AWSStatusSuccess(success=True, status=response.text)
+            text_with_br = response.text.split(":")[1].strip()
+            status = text_with_br.replace("<br>", "")
+            return AWSStatusSuccess(success=True, status=AWSStatus(status))
 
         return AWSStatusFailure(success=False, error=response.text)
 
-    def get_aws(self) -> Optional[AWSContent | AWSStatus]:
+    def get_aws(self) -> Optional[AWSContent | AWSStatusResponse]:
         status = self.get_aws_status()
         if status.success is False:
             return status
-        elif "creation" in status.status.lower():
+        elif AWSStatus.in_creation is status.status:
             return status
 
         response = self._make_request(AWSAction.getaws)

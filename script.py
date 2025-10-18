@@ -42,5 +42,5 @@ else:
     params = load_vocareum_params(config.vocareum_cookies_path)
 
 vocareum_api = VocareumApi(params)
-response = vocareum_api.get_aws()
+response = vocareum_api.get_aws_status()
 print(response)
