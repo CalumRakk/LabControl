@@ -1,14 +1,14 @@
+from labcontrol.credentials import get_settings
+from labcontrol.parser import load_vocareum_params
+from labcontrol.vocareum_http import VocareumApi
+
+lab_cookies_path = r"C:\Users\Leo\Downloads\awsacademy.instructure.com_cookies.txt"
+vocareum_params_path = r"C:\Users\Leo\Downloads\vocareum_params.json"
+credentials = get_settings(".env/labcontrol.env")
 
 
-from labcontrol.lab_aws_http import LabAWSHttpApi
-from labcontrol.lab_aws_browser import LabAWSBrowserAPI
-from labcontrol.parser import load_netscape_cookies
+params = load_vocareum_params(vocareum_params_path)
+vocareum_api = VocareumApi(params)
 
-
-cookies_path= r"C:\Users\Leo\Downloads\awsacademy.instructure.com_cookies.txt"
-cookies= load_netscape_cookies(cookies_path)
-api= LabAWSBrowserAPI(cookies)
-detail= api.get_lab_details()
-
-print(detail)
-
+response = vocareum_api.get_aws_status()
+print(response)
