@@ -112,3 +112,21 @@ def get_lab_aws_details(driver: Chrome) -> list[str]:
 
         content_lab = clear_content(content)
         return content_lab
+
+
+def get_stepid(driver: Chrome, timeout: int = 10) -> int:
+    try:
+        wait = WebDriverWait(driver, timeout)
+        stepid = wait.until(
+            EC.element_to_be_clickable(("xpath", "//div[@id='ResetAssignmentBtn']"))
+        )
+        onclick_text = cast(str, stepid.get_attribute("onclick"))
+        for line in onclick_text.split("&"):
+            if "stepid=" in line:
+                stepid = line.split("=")[1]
+                return int(stepid)
+
+        raise Exception
+    except TimeoutException as e:
+        logger.error("TimeoutException: No se pudo encontrar el stepid.")
+        raise TimeoutException from e

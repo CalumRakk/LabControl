@@ -1,6 +1,5 @@
 import logging
-from pathlib import Path
-from typing import List, Union
+from typing import List
 from urllib.parse import unquote
 
 import requests
@@ -59,7 +58,7 @@ class LabAWSHttpApi:
             data=data,
         )
 
-        assert len(response.history) == 3, "Login failed, check your credentials"
+        assert len(response.history) == 3, "Login failed, check your Config"
 
         responses = [i for i in response.history]
         response_login_canvas = responses[0]
@@ -120,10 +119,3 @@ class LabAWSHttpApi:
 
         full_name_element = root.find(".//span[@class='full_name display_data']")
         return full_name_element is not None
-
-    @staticmethod
-    def save_cookies(cookies: List[SeleniumCookie], cookies_path: Union[Path, str]):
-        cookies_path = (
-            Path(cookies_path) if isinstance(cookies_path, str) else cookies_path
-        )
-        cookies_path.parent.mkdir(parents=True, exist_ok=True)

@@ -93,7 +93,7 @@ def load_netscape_cookies(filepath: Union[str, Path]) -> List[SeleniumCookie]:
     return cookies
 
 
-def save_selenium_cookies(
+def save_netscape_cookies(
     cookies: List[SeleniumCookie], filepath: Union[str, Path]
 ) -> None:
     filepath = Path(filepath) if isinstance(filepath, str) else filepath

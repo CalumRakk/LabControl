@@ -9,6 +9,7 @@ from labcontrol.browser.actions_lab_aws import (
     get_course_id,
     get_lab_aws_details,
     get_lab_item_id,
+    get_stepid,
     set_cookies_on_driver,
     switch_to_iframe,
     wait_for_lab_load,
@@ -128,5 +129,6 @@ class LabAWSBrowserAPI:
             cookies = self.browser.driver.get_cookies()
             vocareum_cookies_compact = {i["name"]: i["value"] for i in cookies}
             vockey = vocareum_cookies_compact["usertoken"]
-            stepid = int(vocareum_cookies_compact["userid"])
+
+            stepid = get_stepid(self.browser.driver)
             return VocareumParams(vockey=vockey, stepid=stepid)

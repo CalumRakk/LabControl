@@ -58,9 +58,7 @@ class DriverManager(metaclass=SingletonMeta):
         options.add_argument("--lang=en-US")
 
         service = ChromeService(executable_path=ChromeDriverManager().install())
-        self._driver = webdriver.Chrome(
-            service=service, options=options
-        )
+        self._driver = webdriver.Chrome(service=service, options=options)
         self._driver.set_window_size(800, 600)
         logger.info("Driver iniciado.")
         return self._driver

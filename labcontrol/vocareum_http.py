@@ -45,7 +45,7 @@ class VocareumApi:
 
         if "failed" in response.text.lower():
             return AWSStatusFailure(success=False, error=response.text)
-        if "Lab status" in response.text.lower():
+        if "lab status" in response.text.lower():
             return AWSStatusSuccess(success=True, status=response.text)
 
         return AWSStatusFailure(success=False, error=response.text)
