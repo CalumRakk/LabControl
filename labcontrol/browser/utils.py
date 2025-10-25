@@ -1,6 +1,9 @@
-from datetime import timedelta
 import re
+from datetime import timedelta
+
 from lxml import html
+
+
 def _remove_last_digit(result: list[str]):
     # Elimina el ultimo elemento digito de la segunda posicion de la lista
     result[1] = result[1][:-1]
@@ -10,11 +13,10 @@ def _remove_last_digit(result: list[str]):
 def clear_content(content:str):
     root= html.fromstring(content.replace("<br>",""))
     text_content= root.text_content()
-    lab_stopped="     Close\t\t \t\t \t\t\xa0\xa0\xa0Cloud Labs\xa0\xa0\xa0"
-    if lab_stopped in text_content:
-        text_content_clean= text_content.replace(lab_stopped, "")
-        result= text_content_clean.split("\xa0\xa0\xa0") 
-        return _remove_last_digit(result)
+
+    if "stopped" in text_content:
+        text_content_clean= text_content.split("\xa0\xa0\xa0")[2:]
+        return _remove_last_digit(text_content_clean)
     raise Exception("No se pudo limpiar el contenido")
 
 def parse_accumulated_time(s: str) -> timedelta:

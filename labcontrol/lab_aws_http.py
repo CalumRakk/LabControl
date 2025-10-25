@@ -35,11 +35,11 @@ class LabAWSHttpApi:
     ):
         self.lab_cookies = cookies
 
-    def _get_initial_cookies(self) -> dict[str, str]:
+    def _get_initial_cookies(self,unquote_value=False) -> dict[str, str]:
         """Obtiene las cookies iniciales necesarias para el login. Las cookies devueltas estan compactas: {cookie_name: cookie_value}"""
         url = "https://awsacademy.instructure.com/login/canvas"
         response = requests.get(url, headers=headers)
-        return cookies_to_requests(response.headers.get("Set-Cookie", ""))
+        return cookies_to_requests(response.headers.get("Set-Cookie", ""), unquote_value)
 
     def _get_login_cookies(self, initial_cookies: dict[str, str]):
         data = {

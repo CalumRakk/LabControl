@@ -4,13 +4,16 @@ from pathlib import Path
 from typing import Dict, List, Union
 from urllib.parse import unquote
 
-from labcontrol.browser.utils import parse_accumulated_time
-from labcontrol.schema import SeleniumCookie, VocareumParams
+from labcontrol.browser.utils import clear_content, parse_accumulated_time
+from labcontrol.schema import AWSDetails, SeleniumCookie, VocareumParams
 
 
-def cookies_to_requests(raw: str) -> Dict[str, str]:
+def cookies_to_requests(raw: str, unquote_value= True) -> Dict[str, str]:
     """
     Convierte un header Cookie o Set-Cookie en un dict simple para requests. Esto implica unquote de los valores.
+
+    Args:
+        unquote_value (bool, optional): Decodificar los valores con unquote. Defaults to True.
     """
     # TODO: agregar set_cookie en el nombre
     cookies = {}
@@ -20,7 +23,7 @@ def cookies_to_requests(raw: str) -> Dict[str, str]:
         segments = [s.strip() for s in part.split(";")]
         if "=" in segments[0]:
             name, value = segments[0].split("=", 1)
-            cookies[name] = unquote(value)  # decodifica %xx
+            cookies[name] = unquote(value) if unquote_value else value  # decodifica %xx
     return cookies
 
 
@@ -121,8 +124,9 @@ def save_netscape_cookies(
     filepath.write_text("\n".join(lines), encoding="utf-8")
 
 
-def parse_lab_aws_details_content(content_lab: list[str]) -> dict:
+def parse_lab_aws_details_content(content: str) -> AWSDetails:
     data = {}
+    content_lab= clear_content(content)
     if len(content_lab) == 3:
         # el laboratorio no ha iniciado.
         session_time_string = content_lab[0]
@@ -150,5 +154,5 @@ def parse_lab_aws_details_content(content_lab: list[str]) -> dict:
         # --- parse accumulated_lab_time ---
 
         data["accumulated_lab_time"] = parse_accumulated_time(accumulated_lab_time)
-        return data
+        return AWSDetails(**data)
     raise ValueError
