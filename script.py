@@ -7,6 +7,6 @@ config = get_settings(".env/labcontrol.env")
 params= get_params_with_config(config)
 vocareum_api = VocareumApi(params)
 
-result = vocareum_api.get_aws_status()
+result = vocareum_api.end_aws()
 
 print(result)

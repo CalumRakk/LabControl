@@ -80,14 +80,22 @@ class AWSContentFailure(BaseModel):
 
 class AWSStartSuccess(BaseModel):
     success: Literal[True]
-    content: str
+    content: dict
 
 
 class AWSStartFailure(BaseModel):
     success: Literal[False]
     error: str
 
+class AWSEndSuccess(BaseModel):
+    success: Literal[True]
+    content: dict
+class AWSEndFailure(BaseModel):
+    success: Literal[False]
+    error: str
 
+AWSEnd = AWSEndSuccess | AWSEndFailure
+AWSStart = AWSStartSuccess | AWSStartFailure
 AWSContent = AWSContentSuccess | AWSContentFailure
 AWSStatus = AWSStatusSuccess | AWSStatusFailure
 Login = LoginSuccess | LoginFailure

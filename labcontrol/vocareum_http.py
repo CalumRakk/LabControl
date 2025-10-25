@@ -1,3 +1,4 @@
+import json
 from typing import Optional
 
 import requests
@@ -7,6 +8,12 @@ from labcontrol.schema import (
     AWSAction,
     AWSContent,
     AWSContentSuccess,
+    AWSEnd,
+    AWSEndFailure,
+    AWSEndSuccess,
+    AWSStart,
+    AWSStartFailure,
+    AWSStartSuccess,
     AWSStatus,
     AWSStatusFailure,
     AWSStatusSuccess,
@@ -70,16 +77,16 @@ class VocareumApi:
 
         return AWSStatusFailure(success=False, error=response.text)
 
-    def start_aws(self) -> AWSContent | AWSStatus:
+    def start_aws(self) -> AWSStart | AWSStatus:
         response = self._make_request(AWSAction.startaws)
         if "success" in response.text:
-            return AWSContentSuccess(success=True, content=response.text)
+            return AWSStartSuccess(success=True, content=json.loads(response.text))
 
-        return AWSStatusFailure(success=False, error=response.text)
+        return AWSStartFailure(success=False, error=response.text)
 
-    def end_aws(self) -> AWSContent | AWSStatus:
+    def end_aws(self) -> AWSEnd | AWSStatus:
         response = self._make_request(AWSAction.endaws)
         if "success" in response.text:
-            return AWSContentSuccess(success=True, content=response.text)
+            return AWSEndSuccess(success=True, content=json.loads(response.text))
 
-        return AWSStatusFailure(success=False, error=response.text)
+        return AWSEndFailure(success=False, error=response.text)
