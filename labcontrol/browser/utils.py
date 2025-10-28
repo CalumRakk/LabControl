@@ -25,6 +25,9 @@ def clear_content(content: str):
         # - 'SSH key\xa0\xa0ShowDownload PEMDownload PPK'
         # - 'AWS SSO\xa0\xa0Download URL-----BEGIN RSA PRIVATE KEY-----...'
 
+        # remove line break
+        text_content_clean[0] = text_content_clean[0].split("\nCloud Labs")[0]
+
         elements = root.xpath(".//button[contains(@onclick, 'ssodownload')]")
         if elements:
             attr_onclikk = elements[0].get("onclick", "")
