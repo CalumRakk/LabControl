@@ -1,3 +1,4 @@
+import base64
 import json
 import time
 
@@ -7,6 +8,7 @@ from requests import Response
 from labcontrol.schema import (
     AWSAction,
     AWSContent,
+    AWSContentFailure,
     AWSContentSuccess,
     AWSEnd,
     AWSEndFailure,
@@ -70,13 +72,18 @@ class VocareumApi:
         response = self._make_request(AWSAction.getaws)
         if "<strong>Cloud Labs</strong>" in response.text:
             return AWSContentSuccess(success=True, content=response.text)
-        return AWSStatusFailure(success=False, error=response.text)
+        return AWSContentFailure(success=False, error=response.text)
 
     def _wait_if_in_creation(self):
-        status = self.get_aws_status()
-        while status.status == LabStatus.in_creation:
+        result = self.get_aws_status()
+        if result.success is False:
+            raise Exception(f"Error getting AWS status: {result.error}")
+
+        while result.status == LabStatus.in_creation:
             time.sleep(1)
-            status = self.get_aws_status()
+            result = self.get_aws_status()
+            if result.success is False:
+                raise Exception(f"Error getting AWS status: {result.error}")
 
     def start_aws(self) -> AWSStart:
         self._wait_if_in_creation()
@@ -93,3 +100,23 @@ class VocareumApi:
             return AWSEndSuccess(success=True, content=json.loads(response.text))
 
         return AWSEndFailure(success=False, error=response.text)
+
+    def get_aws_sso(self, aws_sso: str) -> str:
+        params = self.params.model_dump()
+        params["a"] = AWSAction.ssodownloadaws.value
+
+        data = {
+            "a": "ssodownload",
+            "data": aws_sso,
+            "step": params["stepid"],
+            "vockey": params["vockey"],
+        }
+        response = requests.post(
+            "https://labs.vocareum.com/util/vcput.php", headers=HEADERS, data=data
+        )
+
+        response.raise_for_status()
+        content_base64 = response.text.strip()
+
+        content = base64.b64decode(content_base64)
+        return content.decode("utf-8")

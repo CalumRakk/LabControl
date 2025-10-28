@@ -5,10 +5,15 @@ from typing import Dict, List, Union
 from urllib.parse import unquote
 
 from labcontrol.browser.utils import clear_content, parse_accumulated_time
-from labcontrol.schema import AWSDetails, SeleniumCookie, VocareumParams
+from labcontrol.schema import (
+    AWSDetailsRunning,
+    AWSDetailsStopped,
+    SeleniumCookie,
+    VocareumParams,
+)
 
 
-def cookies_to_requests(raw: str, unquote_value= True) -> Dict[str, str]:
+def cookies_to_requests(raw: str, unquote_value=True) -> Dict[str, str]:
     """
     Convierte un header Cookie o Set-Cookie en un dict simple para requests. Esto implica unquote de los valores.
 
@@ -124,17 +129,19 @@ def save_netscape_cookies(
     filepath.write_text("\n".join(lines), encoding="utf-8")
 
 
-def parse_lab_aws_details_content(content: str) -> AWSDetails:
+def parse_lab_aws_details_content(
+    content: str,
+) -> AWSDetailsStopped | AWSDetailsRunning:
     data = {}
-    content_lab= clear_content(content)
+    content_lab = clear_content(content)
     if len(content_lab) == 3:
         # el laboratorio no ha iniciado.
-        session_time_string = content_lab[0]
+        session_started_at = content_lab[0]
         session_status_time = content_lab[1]
         accumulated_lab_time = content_lab[2]
 
-        # --- parse session_time_string ---
-        session_time_value = session_time_string.split(":", 1)[-1].strip()
+        # --- parse session_started_at ---
+        session_time_value = session_started_at.split(":", 1)[-1].strip()
         if session_time_value.startswith("-"):
             data["session_started_at"] = None
         else:
@@ -154,5 +161,50 @@ def parse_lab_aws_details_content(content: str) -> AWSDetails:
         # --- parse accumulated_lab_time ---
 
         data["accumulated_lab_time"] = parse_accumulated_time(accumulated_lab_time)
-        return AWSDetails(**data)
+        return AWSDetailsStopped(**data)
+    elif len(content_lab) == 6:
+        # 'Copy and paste the following into ~/.aws/credentials[default]\naws_access_key_id=...'
+        copy_and_paste_credentials = content_lab[0]
+        # 'Remaining session time: 03:48:59(229 minutes)'
+        remaining_session_time = content_lab[1]
+        # 'Session started at: 2025-10-28T10:13:38-0700'
+        session_started_at = content_lab[2]
+        # 'Session to end\xa0 at: 2025-10-28T15:44:35-0700'
+        session_to_end = content_lab[3]
+        # 'Accumulated lab time: 1 day 08:22:00 (1942 minutes)'
+        accumulated_lab_time = content_lab[4]
+        #  'AWS SSO\xa0\xa0+QN9LsuSktElOcsrEg5dgg=='
+        aws_sso = content_lab[5]
+
+        # --- parse copy_and_paste_credentials ---
+        data["copy_and_paste_credentials"] = copy_and_paste_credentials.split(
+            "/credentials"
+        )[1]
+        # --- parse remaining_session_time ---
+        data["remaining_session_time"] = parse_accumulated_time(
+            remaining_session_time.split(":", 1)[-1].strip()
+        )
+        # --- parse session_started_at ---
+        session_time_value = session_started_at.split(":", 1)[-1].strip()
+        if session_time_value.startswith("-"):
+            data["session_started_at"] = None
+        else:
+            data["session_started_at"] = datetime.strptime(
+                session_time_value, "%Y-%m-%dT%H:%M:%S%z"
+            )
+        # --- parse session_to_end ---
+        session_end_time_value = session_to_end.split(":", 1)[-1].strip()
+        if session_end_time_value.startswith("-"):
+            data["session_to_end"] = None
+        else:
+            data["session_to_end"] = datetime.strptime(
+                session_end_time_value, "%Y-%m-%dT%H:%M:%S%z"
+            )
+        # --- parse accumulated_lab_time ---
+        data["accumulated_lab_time"] = parse_accumulated_time(accumulated_lab_time)
+
+        # --- parse aws_sso ---
+        data["aws_sso"] = aws_sso.split()[-1].strip()
+
+        return AWSDetailsRunning(**data)
     raise ValueError
