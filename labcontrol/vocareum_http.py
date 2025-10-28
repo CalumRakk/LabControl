@@ -1,5 +1,5 @@
 import json
-from typing import Optional
+import time
 
 import requests
 from requests import Response
@@ -64,20 +64,23 @@ class VocareumApi:
 
         return AWSStatusFailure(success=False, error=response.text)
 
-    def get_aws(self) -> Optional[AWSContent | AWSStatus]:
-        status = self.get_aws_status()
-        if status.success is False:
-            return status
-        elif LabStatus.in_creation is status.status:
-            return status
+    def get_aws(self) -> AWSContent:
+        self._wait_if_in_creation()
 
         response = self._make_request(AWSAction.getaws)
         if "<strong>Cloud Labs</strong>" in response.text:
             return AWSContentSuccess(success=True, content=response.text)
-
         return AWSStatusFailure(success=False, error=response.text)
 
-    def start_aws(self) -> AWSStart | AWSStatus:
+    def _wait_if_in_creation(self):
+        status = self.get_aws_status()
+        while status.status == LabStatus.in_creation:
+            time.sleep(1)
+            status = self.get_aws_status()
+
+    def start_aws(self) -> AWSStart:
+        self._wait_if_in_creation()
+
         response = self._make_request(AWSAction.startaws)
         if "success" in response.text:
             return AWSStartSuccess(success=True, content=json.loads(response.text))
